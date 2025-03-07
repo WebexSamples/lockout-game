@@ -1,0 +1,24 @@
+# EditorConfig is awesome: https://editorconfig.org
+
+# Top-most EditorConfig file
+root = true
+
+# Set the default indentation style to 2 spaces
+[*]
+indent_style = space
+indent_size = 2
+
+# Set the indentation style for specific file types
+[*.js]
+indent_style = space
+indent_size = 2
+
+[*.py]
+indent_style = space
+indent_size = 2
+
+[*.java]
+indent_style = space
+indent_size = 2
+
+# Add more file types as needed

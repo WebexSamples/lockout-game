@@ -1,0 +1,21 @@
+node_modules/
+.ruff_cache/
+#python gitignore
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# pyenv
+venv/
+
+# Certificate authority
+*.pem
+
+# environments
+.env.development
+.env.production
+.env
+
+# nginx config
+lobby.local.conf
