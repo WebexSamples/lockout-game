@@ -1,64 +1,28 @@
 import React from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  Typography,
-} from '@mui/material';
 import PropTypes from 'prop-types';
+import { Box } from '@mui/material';
+import TeamTable from './TeamTable';
+import { TEAMS, TEAM_LABELS } from '../constants';
 
 const LobbyParticipants = ({ participants, currentUser, toggleReady }) => {
+  const team1 = participants.filter((p) => p.team === TEAMS.TEAM1);
+  const team2 = participants.filter((p) => p.team === TEAMS.TEAM2);
+
   return (
-    <TableContainer component={Paper} sx={{ mt: 2 }}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>
-              <strong>Display Name</strong>
-            </TableCell>
-            <TableCell align="center">
-              <strong>Ready</strong>
-            </TableCell>
-            <TableCell align="right">
-              <strong>Actions</strong>
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {participants.map((participant) => {
-            const isCurrentUser = participant.id === currentUser?.id;
-            return (
-              <TableRow key={participant.id}>
-                <TableCell>
-                  <Typography fontWeight={isCurrentUser ? 'bold' : 'normal'}>
-                    {participant.display_name} {isCurrentUser ? '(You)' : ''}
-                  </Typography>
-                </TableCell>
-                <TableCell align="center">
-                  {participant.ready ? '✅ Ready' : '❌ Not Ready'}
-                </TableCell>
-                <TableCell align="right">
-                  {isCurrentUser && (
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={toggleReady}
-                    >
-                      {participant.ready ? 'Unready' : 'Ready'}
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <Box>
+      <TeamTable
+        teamLabel={TEAM_LABELS[TEAMS.TEAM1]}
+        participants={team1}
+        currentUser={currentUser}
+        toggleReady={toggleReady}
+      />
+      <TeamTable
+        teamLabel={TEAM_LABELS[TEAMS.TEAM2]}
+        participants={team2}
+        currentUser={currentUser}
+        toggleReady={toggleReady}
+      />
+    </Box>
   );
 };
 

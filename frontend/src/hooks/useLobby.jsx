@@ -1,17 +1,10 @@
 import { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import api from '../utils/api';
-import { SOCKET_EVENTS, ROUTES } from '../constants';
+import { SOCKET_EVENTS, ROUTES, TEAMS } from '../constants';
 
 const socket = io(import.meta.env.VITE_SOCKET_URL);
 
-/**
- * Custom hook to manage lobby state, user actions, and socket communication.
- *
- * @param {string} lobbyId - The unique ID of the lobby.
- * @param {Object} [initialUser] - The user object, if available.
- * @returns {Object} Lobby state and actions.
- */
 const useLobby = (lobbyId, initialUser) => {
   const [lobby, setLobby] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,8 +31,6 @@ const useLobby = (lobbyId, initialUser) => {
   }, [lobbyId]);
 
   useEffect(() => {
-    if (!joined) return;
-
     socket.on(SOCKET_EVENTS.LOBBY_UPDATE, (data) => {
       setLobby(data);
     });
@@ -47,42 +38,28 @@ const useLobby = (lobbyId, initialUser) => {
     return () => {
       socket.off(SOCKET_EVENTS.LOBBY_UPDATE);
     };
-  }, [joined, lobbyId]);
+  }, []);
 
-  /**
-   * Joins the lobby with a full user object (id + display name).
-   */
   const joinLobby = (userObj) => {
-    if (!userObj.id || !userObj.display_name.trim())
-      return { error: 'User ID and display name required' };
+    if (!userObj.id || !userObj.display_name.trim()) return;
 
     socket.emit(SOCKET_EVENTS.LOBBY_JOIN, { lobby_id: lobbyId, user: userObj });
-
     setJoined(true);
     setUser(userObj);
     localStorage.setItem(`lobbyUser-${lobbyId}`, JSON.stringify(userObj));
-
-    return { user: userObj };
   };
 
-  /**
-   * Leaves the lobby and removes the user from localStorage.
-   */
   const leaveLobby = () => {
     if (user) {
       socket.emit(SOCKET_EVENTS.LOBBY_LEAVE, {
         lobby_id: lobbyId,
         user_id: user.id,
       });
-
       setJoined(false);
       localStorage.removeItem(`lobbyUser-${lobbyId}`);
     }
   };
 
-  /**
-   * Toggles the user's ready status.
-   */
   const toggleReady = () => {
     if (user) {
       socket.emit(SOCKET_EVENTS.LOBBY_TOGGLE_READY, {
@@ -92,10 +69,6 @@ const useLobby = (lobbyId, initialUser) => {
     }
   };
 
-  /**
-   * Updates the user's display name and persists it.
-   * @param {string} newDisplayName - The new display name.
-   */
   const updateDisplayName = (newDisplayName) => {
     if (!newDisplayName.trim()) return;
     if (user) {
@@ -105,10 +78,61 @@ const useLobby = (lobbyId, initialUser) => {
         user_id: user.id,
         new_display_name: newDisplayName,
       });
-
       setUser(updatedUser);
       localStorage.setItem(`lobbyUser-${lobbyId}`, JSON.stringify(updatedUser));
     }
+  };
+
+  const toggleTeam = () => {
+    if (!user || !lobby) return;
+    const currentParticipant = lobby.participants.find((p) => p.id === user.id);
+    if (!currentParticipant) return;
+
+    const newTeam =
+      currentParticipant.team === TEAMS.TEAM1 ? TEAMS.TEAM2 : TEAMS.TEAM1;
+    socket.emit(SOCKET_EVENTS.LOBBY_CHANGE_TEAM, {
+      lobby_id: lobbyId,
+      user_id: user.id,
+      new_team: newTeam,
+    });
+  };
+
+  const requestTeamLead = () => {
+    if (!user || !lobby || hasTeamLead(user.id)) return;
+    socket.emit(SOCKET_EVENTS.LOBBY_ASSIGN_TEAM_LEAD, {
+      lobby_id: lobbyId,
+      user_id: user.id,
+      team: getCurrentTeam(),
+      is_team_lead: true,
+    });
+  };
+
+  const hasTeamLead = (excludeUserId = null) => {
+    const currentTeam = getCurrentTeam();
+    if (!lobby || !currentTeam) return false;
+    return lobby.participants.some(
+      (p) => p.team === currentTeam && p.is_team_lead && p.id !== excludeUserId,
+    );
+  };
+
+  const demoteTeamLead = () => {
+    if (!user || !lobby) return;
+    socket.emit(SOCKET_EVENTS.LOBBY_DEMOTE_TEAM_LEAD, {
+      lobby_id: lobbyId,
+      user_id: user.id,
+    });
+  };
+
+  const getCurrentTeam = () => {
+    if (!lobby || !user) return null;
+    const participant = lobby.participants.find((p) => p.id === user.id);
+    return participant?.team || null;
+  };
+
+  const isUserTeamLead = () => {
+    if (!lobby || !user) return false;
+    const participant = lobby.participants.find((p) => p.id === user.id);
+    return participant?.is_team_lead || false;
   };
 
   return {
@@ -121,6 +145,11 @@ const useLobby = (lobbyId, initialUser) => {
     toggleReady,
     updateDisplayName,
     user,
+    toggleTeam,
+    requestTeamLead,
+    demoteTeamLead,
+    isUserTeamLead,
+    hasTeamLead,
   };
 };
 

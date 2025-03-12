@@ -6,98 +6,150 @@ import {
   Typography,
   Button,
   TextField,
-  Grid2,
   Dialog,
-  DialogActions,
+  DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogTitle,
+  DialogActions,
+  Grid2,
 } from '@mui/material';
 
 const LobbyActions = ({
+  currentUser,
   newDisplayName,
   setNewDisplayName,
   updateDisplayName,
   leaveLobby,
+  toggleTeam,
+  requestTeamLead,
+  demoteTeamLead,
+  isUserTeamLead,
+  hasTeamLead,
 }) => {
-  const [openDialog, setOpenDialog] = useState(false);
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
 
   const handleLeaveLobby = () => {
-    setOpenDialog(true);
+    setLeaveConfirmOpen(true);
   };
 
   const confirmLeaveLobby = () => {
     leaveLobby();
-    setOpenDialog(false);
+    setLeaveConfirmOpen(false);
   };
 
-  return (
-    <>
-      <Card sx={{ mt: 3 }}>
-        <CardContent>
-          <Typography variant="h6">Your Actions</Typography>
-          <Grid2 container spacing={2} columns={12} sx={{ mt: 1 }}>
-            <Grid2 sx={{ gridColumn: 'span 8' }}>
-              <TextField
-                fullWidth
-                label="New Display Name"
-                variant="outlined"
-                value={newDisplayName}
-                onChange={(e) => setNewDisplayName(e.target.value)}
-              />
-            </Grid2>
-            <Grid2 sx={{ gridColumn: 'span 4' }}>
-              <Button
-                fullWidth
-                variant="contained"
-                disabled={!newDisplayName.trim()}
-                onClick={() => updateDisplayName(newDisplayName)}
-              >
-                Update Name
-              </Button>
-            </Grid2>
-            <Grid2 sx={{ gridColumn: 'span 12', mt: 2 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                color="error"
-                onClick={handleLeaveLobby}
-              >
-                Leave Lobby
-              </Button>
-            </Grid2>
-          </Grid2>
-        </CardContent>
-      </Card>
+  if (!currentUser) return null;
 
-      {/* Confirmation Dialog for Leaving */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+  return (
+    <Card sx={{ mt: 3 }}>
+      <CardContent>
+        <Typography variant="h6" gutterBottom>
+          Your Actions
+        </Typography>
+
+        <Grid2 container spacing={2}>
+          <Grid2 size={{ xs: 12, sm: 8 }}>
+            <TextField
+              fullWidth
+              label="Update Display Name"
+              value={newDisplayName}
+              onChange={(e) => setNewDisplayName(e.target.value)}
+              variant="outlined"
+            />
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
+            <Button
+              fullWidth
+              variant="contained"
+              disabled={!newDisplayName.trim()}
+              onClick={() => updateDisplayName(newDisplayName)}
+            >
+              Update Name
+            </Button>
+          </Grid2>
+
+          <Grid2 size={{ xs: 12, sm: 4 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={toggleTeam}
+              disabled={!toggleTeam}
+            >
+              Switch Team
+            </Button>
+          </Grid2>
+
+          {!isUserTeamLead() && (
+            <Grid2 size={{ xs: 12, sm: 4 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={requestTeamLead}
+                disabled={hasTeamLead(currentUser.id)}
+              >
+                Become Team Lead
+              </Button>
+            </Grid2>
+          )}
+
+          {isUserTeamLead() && (
+            <Grid2 size={{ xs: 12, sm: 4 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                color="warning"
+                onClick={demoteTeamLead}
+              >
+                Demote Self
+              </Button>
+            </Grid2>
+          )}
+
+          <Grid2 size={12}>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="error"
+              onClick={handleLeaveLobby}
+            >
+              Leave Lobby
+            </Button>
+          </Grid2>
+        </Grid2>
+      </CardContent>
+
+      <Dialog
+        open={leaveConfirmOpen}
+        onClose={() => setLeaveConfirmOpen(false)}
+      >
         <DialogTitle>Leave Lobby</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to leave the lobby? You may need to rejoin if
-            you leave.
+            Are you sure you want to leave the lobby? You’ll be removed from the
+            game and may have to rejoin manually.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={confirmLeaveLobby} color="error" variant="contained">
-            Leave
+          <Button onClick={() => setLeaveConfirmOpen(false)}>Cancel</Button>
+          <Button variant="contained" color="error" onClick={confirmLeaveLobby}>
+            Confirm Leave
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </Card>
   );
 };
 
-// ✅ Define PropTypes for Type Safety
 LobbyActions.propTypes = {
+  currentUser: PropTypes.object.isRequired,
   newDisplayName: PropTypes.string.isRequired,
   setNewDisplayName: PropTypes.func.isRequired,
   updateDisplayName: PropTypes.func.isRequired,
   leaveLobby: PropTypes.func.isRequired,
+  toggleTeam: PropTypes.func,
+  requestTeamLead: PropTypes.func,
+  demoteTeamLead: PropTypes.func,
+  isUserTeamLead: PropTypes.func,
+  hasTeamLead: PropTypes.func,
 };
 
 export default LobbyActions;
