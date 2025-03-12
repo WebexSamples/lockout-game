@@ -14,6 +14,12 @@ import {
 } from '@mui/material';
 
 const TeamTable = ({ participants, currentUser, toggleReady, teamLabel }) => {
+  const sortedParticipants = [...participants].sort((a, b) => {
+    if (a.is_team_lead && !b.is_team_lead) return -1;
+    if (!a.is_team_lead && b.is_team_lead) return 1;
+    return a.display_name.localeCompare(b.display_name);
+  });
+
   return (
     <Box sx={{ mb: 4 }}>
       <Typography variant="h6" gutterBottom>
@@ -30,7 +36,7 @@ const TeamTable = ({ participants, currentUser, toggleReady, teamLabel }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {participants.map((p) => {
+            {sortedParticipants.map((p) => {
               const isCurrent = p.id === currentUser?.id;
               return (
                 <TableRow key={p.id}>

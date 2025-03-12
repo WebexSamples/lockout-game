@@ -1,17 +1,10 @@
 import { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import api from '../utils/api';
-import { SOCKET_EVENTS, ROUTES } from '../constants';
+import { SOCKET_EVENTS, ROUTES, TEAMS } from '../constants';
 
 const socket = io(import.meta.env.VITE_SOCKET_URL);
 
-/**
- * Custom hook to manage lobby state, user actions, and socket communication.
- *
- * @param {string} lobbyId - The unique ID of the lobby.
- * @param {Object} [initialUser] - The user object, if available.
- * @returns {Object} Lobby state and actions.
- */
 const useLobby = (lobbyId, initialUser) => {
   const [lobby, setLobby] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,8 +31,6 @@ const useLobby = (lobbyId, initialUser) => {
   }, [lobbyId]);
 
   useEffect(() => {
-    if (!joined) return;
-
     socket.on(SOCKET_EVENTS.LOBBY_UPDATE, (data) => {
       setLobby(data);
     });
@@ -47,7 +38,7 @@ const useLobby = (lobbyId, initialUser) => {
     return () => {
       socket.off(SOCKET_EVENTS.LOBBY_UPDATE);
     };
-  }, [joined, lobbyId]);
+  }, []);
 
   const joinLobby = (userObj) => {
     if (!userObj.id || !userObj.display_name.trim()) return;
@@ -94,31 +85,54 @@ const useLobby = (lobbyId, initialUser) => {
 
   const toggleTeam = () => {
     if (!user || !lobby) return;
-    const newTeam = user.team === 'team1' ? 'team2' : 'team1';
-    socket.emit(SOCKET_EVENTS.LOBBY_ASSIGN_TEAM_LEAD, {
+    const currentParticipant = lobby.participants.find((p) => p.id === user.id);
+    if (!currentParticipant) return;
+
+    const newTeam =
+      currentParticipant.team === TEAMS.TEAM1 ? TEAMS.TEAM2 : TEAMS.TEAM1;
+    socket.emit(SOCKET_EVENTS.LOBBY_CHANGE_TEAM, {
       lobby_id: lobbyId,
       user_id: user.id,
-      team: newTeam,
-      is_team_lead: user.is_team_lead || false,
+      new_team: newTeam,
     });
   };
 
   const requestTeamLead = () => {
-    if (!user || !lobby) return;
+    if (!user || !lobby || hasTeamLead(user.id)) return;
     socket.emit(SOCKET_EVENTS.LOBBY_ASSIGN_TEAM_LEAD, {
       lobby_id: lobbyId,
       user_id: user.id,
-      team: user.team,
+      team: getCurrentTeam(),
       is_team_lead: true,
     });
   };
 
+  const hasTeamLead = (excludeUserId = null) => {
+    const currentTeam = getCurrentTeam();
+    if (!lobby || !currentTeam) return false;
+    return lobby.participants.some(
+      (p) => p.team === currentTeam && p.is_team_lead && p.id !== excludeUserId,
+    );
+  };
+
   const demoteTeamLead = () => {
-    if (!user || !lobby || !user.is_team_lead) return;
+    if (!user || !lobby) return;
     socket.emit(SOCKET_EVENTS.LOBBY_DEMOTE_TEAM_LEAD, {
       lobby_id: lobbyId,
       user_id: user.id,
     });
+  };
+
+  const getCurrentTeam = () => {
+    if (!lobby || !user) return null;
+    const participant = lobby.participants.find((p) => p.id === user.id);
+    return participant?.team || null;
+  };
+
+  const isUserTeamLead = () => {
+    if (!lobby || !user) return false;
+    const participant = lobby.participants.find((p) => p.id === user.id);
+    return participant?.is_team_lead || false;
   };
 
   return {
@@ -134,6 +148,8 @@ const useLobby = (lobbyId, initialUser) => {
     toggleTeam,
     requestTeamLead,
     demoteTeamLead,
+    isUserTeamLead,
+    hasTeamLead,
   };
 };
 

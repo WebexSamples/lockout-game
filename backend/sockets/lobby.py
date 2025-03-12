@@ -16,6 +16,7 @@ from ..constants import (
     LOBBY_TOGGLE_READY,
     LOBBY_UPDATE,
     LOBBY_UPDATE_DISPLAY_NAME,
+    LOBBY_CHANGE_TEAM,
     TEAM1,
     TEAM2,
 )
@@ -151,6 +152,29 @@ def register_lobby_socket_handlers(socketio):
                 break
 
         emit(LOBBY_UPDATE, lobby, room=lobby_id)
+
+    @socketio.on(LOBBY_CHANGE_TEAM)
+    def handle_change_team(data):
+        lobby_id = data.get("lobby_id")
+        user_id = data.get("user_id")
+        new_team = data.get("new_team")
+        lobby = get_lobbies().get(lobby_id)
+
+        if not lobby:
+            emit(LOBBY_ERROR, {"message": "Lobby not found"})
+            return
+
+        for p in lobby["participants"]:
+            if p["id"] == user_id:
+                # Demote team lead status if switching teams
+                if p.get(FIELD_IS_TEAM_LEAD):
+                    p[FIELD_IS_TEAM_LEAD] = False
+                p[FIELD_TEAM] = new_team
+                p["ready"] = False
+                break
+
+        emit(LOBBY_UPDATE, lobby, room=lobby_id)
+
 
     @socketio.on(LOBBY_START_GAME)
     def handle_start_game(data):

@@ -23,8 +23,12 @@ const CreateLobby = () => {
   // This is a workaround to avoid setting default values before Webex SDK is ready
   useEffect(() => {
     if (!isLoading) {
-      setLobbyName(meetingName);
-      setDisplayName(username);
+      if (meetingName) {
+        setLobbyName(meetingName);
+      }
+      if (username) {
+        setDisplayName(username);
+      }
     }
   }, [isLoading, meetingName, username]);
 

@@ -10,6 +10,18 @@ export const SOCKET_EVENTS = {
   LOBBY_DEMOTE_TEAM_LEAD: 'lobby:demote_team_lead',
   LOBBY_START_GAME: 'lobby:start_game',
   LOBBY_FORCE_START: 'lobby:force_start',
+  LOBBY_CHANGE_TEAM: 'lobby:change_team',
+};
+
+// Team constants
+export const TEAMS = {
+  TEAM1: 'team1',
+  TEAM2: 'team2',
+};
+
+export const TEAM_LABELS = {
+  [TEAMS.TEAM1]: 'Team 1 (Bluewave)',
+  [TEAMS.TEAM2]: 'Team 2 (Redshift)',
 };
 
 // Route constants

@@ -29,6 +29,8 @@ const Lobby = () => {
     toggleTeam,
     requestTeamLead,
     demoteTeamLead,
+    isUserTeamLead,
+    hasTeamLead,
   } = useLobby(lobbyId, user);
 
   const [newDisplayName, setNewDisplayName] = useState('');
@@ -87,6 +89,8 @@ const Lobby = () => {
         toggleTeam={toggleTeam}
         requestTeamLead={requestTeamLead}
         demoteTeamLead={demoteTeamLead}
+        isUserTeamLead={isUserTeamLead}
+        hasTeamLead={hasTeamLead}
       />
     </Box>
   );

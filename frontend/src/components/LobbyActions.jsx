@@ -23,6 +23,8 @@ const LobbyActions = ({
   toggleTeam,
   requestTeamLead,
   demoteTeamLead,
+  isUserTeamLead,
+  hasTeamLead,
 }) => {
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
 
@@ -45,7 +47,7 @@ const LobbyActions = ({
         </Typography>
 
         <Grid2 container spacing={2}>
-          <Grid2 xs={12} md={8}>
+          <Grid2 size={{ xs: 12, sm: 8 }}>
             <TextField
               fullWidth
               label="Update Display Name"
@@ -54,7 +56,7 @@ const LobbyActions = ({
               variant="outlined"
             />
           </Grid2>
-          <Grid2 xs={12} md={4}>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
             <Button
               fullWidth
               variant="contained"
@@ -65,7 +67,7 @@ const LobbyActions = ({
             </Button>
           </Grid2>
 
-          <Grid2 xs={12} md={4}>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
             <Button
               fullWidth
               variant="outlined"
@@ -76,34 +78,33 @@ const LobbyActions = ({
             </Button>
           </Grid2>
 
-          {!currentUser.is_team_lead && (
-            <Grid2 xs={12} md={4}>
+          {!isUserTeamLead() && (
+            <Grid2 size={{ xs: 12, sm: 4 }}>
               <Button
                 fullWidth
                 variant="outlined"
                 onClick={requestTeamLead}
-                disabled={!requestTeamLead}
+                disabled={hasTeamLead(currentUser.id)}
               >
                 Become Team Lead
               </Button>
             </Grid2>
           )}
 
-          {currentUser.is_team_lead && (
-            <Grid2 xs={12} md={4}>
+          {isUserTeamLead() && (
+            <Grid2 size={{ xs: 12, sm: 4 }}>
               <Button
                 fullWidth
                 variant="outlined"
                 color="warning"
                 onClick={demoteTeamLead}
-                disabled={!demoteTeamLead}
               >
                 Demote Self
               </Button>
             </Grid2>
           )}
 
-          <Grid2 xs={12}>
+          <Grid2 size={12}>
             <Button
               fullWidth
               variant="outlined"
@@ -147,6 +148,8 @@ LobbyActions.propTypes = {
   toggleTeam: PropTypes.func,
   requestTeamLead: PropTypes.func,
   demoteTeamLead: PropTypes.func,
+  isUserTeamLead: PropTypes.func,
+  hasTeamLead: PropTypes.func,
 };
 
 export default LobbyActions;
