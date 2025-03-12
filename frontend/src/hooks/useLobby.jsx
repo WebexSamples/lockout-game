@@ -49,40 +49,26 @@ const useLobby = (lobbyId, initialUser) => {
     };
   }, [joined, lobbyId]);
 
-  /**
-   * Joins the lobby with a full user object (id + display name).
-   */
   const joinLobby = (userObj) => {
-    if (!userObj.id || !userObj.display_name.trim())
-      return { error: 'User ID and display name required' };
+    if (!userObj.id || !userObj.display_name.trim()) return;
 
     socket.emit(SOCKET_EVENTS.LOBBY_JOIN, { lobby_id: lobbyId, user: userObj });
-
     setJoined(true);
     setUser(userObj);
     localStorage.setItem(`lobbyUser-${lobbyId}`, JSON.stringify(userObj));
-
-    return { user: userObj };
   };
 
-  /**
-   * Leaves the lobby and removes the user from localStorage.
-   */
   const leaveLobby = () => {
     if (user) {
       socket.emit(SOCKET_EVENTS.LOBBY_LEAVE, {
         lobby_id: lobbyId,
         user_id: user.id,
       });
-
       setJoined(false);
       localStorage.removeItem(`lobbyUser-${lobbyId}`);
     }
   };
 
-  /**
-   * Toggles the user's ready status.
-   */
   const toggleReady = () => {
     if (user) {
       socket.emit(SOCKET_EVENTS.LOBBY_TOGGLE_READY, {
@@ -92,10 +78,6 @@ const useLobby = (lobbyId, initialUser) => {
     }
   };
 
-  /**
-   * Updates the user's display name and persists it.
-   * @param {string} newDisplayName - The new display name.
-   */
   const updateDisplayName = (newDisplayName) => {
     if (!newDisplayName.trim()) return;
     if (user) {
@@ -105,10 +87,38 @@ const useLobby = (lobbyId, initialUser) => {
         user_id: user.id,
         new_display_name: newDisplayName,
       });
-
       setUser(updatedUser);
       localStorage.setItem(`lobbyUser-${lobbyId}`, JSON.stringify(updatedUser));
     }
+  };
+
+  const toggleTeam = () => {
+    if (!user || !lobby) return;
+    const newTeam = user.team === 'team1' ? 'team2' : 'team1';
+    socket.emit(SOCKET_EVENTS.LOBBY_ASSIGN_TEAM_LEAD, {
+      lobby_id: lobbyId,
+      user_id: user.id,
+      team: newTeam,
+      is_team_lead: user.is_team_lead || false,
+    });
+  };
+
+  const requestTeamLead = () => {
+    if (!user || !lobby) return;
+    socket.emit(SOCKET_EVENTS.LOBBY_ASSIGN_TEAM_LEAD, {
+      lobby_id: lobbyId,
+      user_id: user.id,
+      team: user.team,
+      is_team_lead: true,
+    });
+  };
+
+  const demoteTeamLead = () => {
+    if (!user || !lobby || !user.is_team_lead) return;
+    socket.emit(SOCKET_EVENTS.LOBBY_DEMOTE_TEAM_LEAD, {
+      lobby_id: lobbyId,
+      user_id: user.id,
+    });
   };
 
   return {
@@ -121,6 +131,9 @@ const useLobby = (lobbyId, initialUser) => {
     toggleReady,
     updateDisplayName,
     user,
+    toggleTeam,
+    requestTeamLead,
+    demoteTeamLead,
   };
 };
 

@@ -6,6 +6,10 @@ export const SOCKET_EVENTS = {
   LOBBY_TOGGLE_READY: 'lobby:toggle_ready',
   LOBBY_UPDATE: 'lobby:update',
   LOBBY_ERROR: 'lobby:error',
+  LOBBY_ASSIGN_TEAM_LEAD: 'lobby:assign_team_lead',
+  LOBBY_DEMOTE_TEAM_LEAD: 'lobby:demote_team_lead',
+  LOBBY_START_GAME: 'lobby:start_game',
+  LOBBY_FORCE_START: 'lobby:force_start',
 };
 
 // Route constants
