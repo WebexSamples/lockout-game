@@ -1,3 +1,4 @@
+// src/components/TeamTable.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
@@ -13,7 +14,16 @@ import {
   Box,
 } from '@mui/material';
 
-const TeamTable = ({ participants, currentUser, toggleReady, teamLabel }) => {
+/**
+ * Renders a participant list table for a given team.
+ *
+ * @param {Object} props
+ * @param {string} teamLabel - Label to display for the team
+ * @param {Array} participants - List of participants on the team
+ * @param {Object} currentUser - The current user object
+ * @param {Function} toggleReady - Handler to toggle user's ready state
+ */
+const TeamTable = ({ teamLabel, participants, currentUser, toggleReady }) => {
   const sortedParticipants = [...participants].sort((a, b) => {
     if (a.is_team_lead && !b.is_team_lead) return -1;
     if (!a.is_team_lead && b.is_team_lead) return 1;

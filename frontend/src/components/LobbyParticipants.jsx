@@ -1,10 +1,18 @@
+// src/components/LobbyParticipants.jsx
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box } from '@mui/material';
 import TeamTable from './TeamTable';
 import { TEAMS, TEAM_LABELS } from '../constants';
+import { useLobbyContext } from '../context/useLobbyContext';
 
-const LobbyParticipants = ({ participants, currentUser, toggleReady }) => {
+/**
+ * Displays both team rosters using TeamTable components.
+ */
+const LobbyParticipants = () => {
+  const { lobby, user, toggleReady } = useLobbyContext();
+
+  const participants = lobby?.participants || [];
+
   const team1 = participants.filter((p) => p.team === TEAMS.TEAM1);
   const team2 = participants.filter((p) => p.team === TEAMS.TEAM2);
 
@@ -13,23 +21,17 @@ const LobbyParticipants = ({ participants, currentUser, toggleReady }) => {
       <TeamTable
         teamLabel={TEAM_LABELS[TEAMS.TEAM1]}
         participants={team1}
-        currentUser={currentUser}
+        currentUser={user}
         toggleReady={toggleReady}
       />
       <TeamTable
         teamLabel={TEAM_LABELS[TEAMS.TEAM2]}
         participants={team2}
-        currentUser={currentUser}
+        currentUser={user}
         toggleReady={toggleReady}
       />
     </Box>
   );
-};
-
-LobbyParticipants.propTypes = {
-  participants: PropTypes.array.isRequired,
-  currentUser: PropTypes.object,
-  toggleReady: PropTypes.func.isRequired,
 };
 
 export default LobbyParticipants;
