@@ -1,153 +1,111 @@
-# Multi-User Webex Embedded App Launch Pad
+![Lockout Game Header](./frontend/src/lockout.png)
 
-![Launch Pad Image](image.png)
+# 🔐 Lockout Game
 
-A Webex Embedded App starter project providing a **real-time multi-user lobby system** for seamless collaboration within Webex Meetings. This project uses a **Flask backend** with **Flask-SocketIO** for real-time communication and a **React frontend** powered by **Vite**. Users can create, join, and manage lobbies dynamically with WebSocket-based updates. The project is built to be integrated with Webex Embedded Apps to provide a seamless real-time experience within Webex Meetings.
+**Lockout** game — a Webex-integrated, real-time multiplayer word game inspired by _Codenames_, reimagined with a **hacker vs cybersecurity AI theme**.
 
-## Features
+Players join teams, take on roles, ready up, and launch into a game session directly within a Webex meeting using **Socket.IO + LobbyContext-powered React frontend**.
 
-| Feature                            | Description                                                   |
-| ---------------------------------- | ------------------------------------------------------------- |
-| **Lobby Creation**                 | Users can create a lobby with a custom name.                  |
-| **Join & Leave**                   | Participants can enter or exit lobbies in real-time.          |
-| **Unique IDs**                     | Each user receives a unique UUID for tracking.                |
-| **Display Name Updates**           | Users can modify their display names.                         |
-| **Ready Toggle**                   | Participants can mark themselves as "Ready" or "Not Ready."   |
-| **Real-Time Updates**              | Instant lobby state updates with **Socket.IO**.               |
-| **Webex Embedded App Integration** | Fetches meeting details and integrates seamlessly into Webex. |
+---
 
-## Installation
+## 🚀 Gameplay Theme – Lockout
 
-### Prerequisites
+In the digital underworld, two rival hacker groups — **Bluewave** and **Redshift** — compete to extract sensitive data from a hostile AI system known as **Sentinel**.
 
-- Python 3.8+
-- Node.js 14+
-- npm
+- 🧠 **Hackers** (Team Leads): Give strategic clues
+- 🤖 **AI Agents** (Teammates): Decode clues and extract files
+- 💀 **Cybersecurity Traps**: One wrong guess, game over
+- 🕸 **Honeypots**: Decoys planted by Sentinel
 
-### Backend Setup
+Only one team will breach the vault. Will you outsmart the AI, or fall into its trap?
 
-```sh
-cd backend
-python -m venv venv
-source venv/bin/activate  # macOS/Linux
-# venv\Scripts\activate   # Windows
-pip install -r requirements.txt
+---
+
+## 🧩 Architecture Overview
+
+This frontend is a **Vite + React application** using:
+
+- **React Context API** (no Redux, no external state libraries)
+- **MUI v6** for component design
+- **Socket.IO** for real-time updates
+- **Webex Embedded Apps SDK** for user and meeting identity
+
+---
+
+## 🔧 Key Features
+
+| Feature                          | Description                                                                                                   |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 🔐 **LobbyContext**              | All lobby state (participants, roles, team, ready status) is managed globally via React Context               |
+| 🔄 **WebSocket Updates**         | All state changes are real-time via `Socket.IO`                                                               |
+| 💬 **Team Role Assignment**      | One Hacker per team; players can switch teams or roles                                                        |
+| ✅ **Ready Up System**           | Players mark themselves "Ready"; game won't start until conditions are met                                    |
+| 🗡 **Self-contained Components** | UI components like `LobbyDetails`, `LobbyParticipants`, and `LobbyActions` are all context-aware and reusable |
+| ⚡ **Hot Module Reload Safe**    | All context is split properly for HMR support                                                                 |
+
+---
+
+## 📚 How to Use `LobbyContext` in Components
+
+```js
+import { useLobbyContext } from '../context/useLobbyContext';
+
+const MyComponent = () => {
+  const {
+    lobby,
+    user,
+    joinLobby,
+    toggleReady,
+    isUserTeamLead,
+    updateDisplayName,
+  } = useLobbyContext();
+
+  return <div>Welcome, {user?.display_name}</div>;
+};
 ```
 
-### Frontend Setup
+> Must be rendered within a `<LobbyProvider lobbyId="..." initialUser={...}>` scope.
 
-```sh
-cd frontend
-npm install
+---
+
+## 🧪 Developer Tip – Testing a Component in Isolation
+
+```jsx
+import { LobbyContext } from '../context/LobbyContext';
+
+<LobbyContext.Provider value={mockContextValue}>
+  <MyComponent />
+</LobbyContext.Provider>;
 ```
 
-## Running the Project
+---
 
-### Start the Backend
+## 🎞 Game Start Conditions (Enforced by Backend)
 
-```sh
-python -m backend.app
-```
+- ✅ **Each team has one Hacker (team lead)**
+- ✅ **Teams are balanced**
+- ✅ **All players are Ready**
 
-This starts the Flask server with Socket.IO on port **5000**.
+Optionally, the **Game Host** can use **Force Start** (bypasses balance check but not readiness).
 
-### Start the Frontend
+---
 
-```sh
-npm run dev
-```
+## 📜 Contribution Notes
 
-The Vite development server usually runs at **http://localhost:5173**.
+- Use `Grid2` from `@mui/material` with the `size={{ xs, sm }}` prop.
+- Follow Prettier config:
+  ```json
+  {
+    "singleQuote": true,
+    "tabWidth": 2,
+    "useTabs": false,
+    "semi": true,
+    "endOfLine": "auto"
+  }
+  ```
+- All Python backend code is formatted via Ruff.
+- Context-based code is preferred over prop-drilling or hooks with duplicate state.
 
-## API Endpoints
+---
 
-### Create a Lobby
-
-**POST** `/api/lobby`
-
-```json
-{
-  "host_id": "user123",
-  "host_display_name": "Alice",
-  "lobby_name": "Team Discussion"
-}
-```
-
-_Response:_
-
-```json
-{
-  "lobby_id": "abcd-1234",
-  "lobby_url": "http://localhost:5173/lobby/abcd-1234",
-  "lobby_name": "Team Discussion"
-}
-```
-
-### Get Lobby Details
-
-**GET** `/api/lobby/{lobby_id}`
-
-_Response:_
-
-```json
-{
-  "host": "user123",
-  "lobby_name": "Team Discussion",
-  "participants": [{ "id": "user123", "display_name": "Alice", "ready": false }]
-}
-```
-
-## Webex Integration
-
-This project leverages the **Webex Embedded Apps SDK** to enhance the experience inside Webex Meetings.
-
-### How It Works
-
-- **Meeting Details:** The app automatically retrieves the **Webex meeting title** and sets it as the **lobby name**.
-- **User Identity:** The app fetches the current user's **display name** from Webex.
-- **Deep Linking:** Webex users can share the lobby link **within the Webex meeting interface**.
-
-_For Webex SDK documentation, see:_ [Webex Embedded Apps Documentation](https://developer.webex.com/docs/embedded-apps).
-
-## Development & Contribution
-
-### Code Formatting
-
-This project enforces consistent coding style using:
-
-- **Prettier** for JavaScript (`npm run format`)
-- **Ruff** for Python (`ruff check --fix .`)
-
-### Git Workflow
-
-- Fork & clone the repo
-- Create a feature branch (`git checkout -b feature-xyz`)
-- Submit a **Pull Request**
-
-## Deployment Guide
-
-To serve the app in a **production-like** setup:
-
-### **Nginx Reverse Proxy Setup**
-
-1. **Update your hosts file** (`/etc/hosts` or `C:\Windows\System32\drivers\etc\hosts`):
-
-```
-127.0.0.1 lobby.local
-```
-
-2. **Generate SSL certificates** (e.g., with mkcert or Let's Encrypt).
-3. **Deploy frontend**:
-
-```sh
-cd frontend
-npm run build
-```
-
-4. **Run Flask backend & Nginx**.
-
-_See the `SERVING.md` file for more details on production setup._
-
-## Acknowledgments
-
-Built by the **Webex Developer Relations Team** at Cisco ❤️
+Made with ❤️ by the Webex Developer Relations Team
