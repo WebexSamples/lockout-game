@@ -39,7 +39,9 @@ describe('useWebex (real hook, mocked SDK)', () => {
     vi.clearAllMocks();
 
     globalThis.mockAppInstance.onReady.mockResolvedValue();
-    globalThis.mockAppInstance.context.getMeeting.mockResolvedValue({ title: 'Test Meeting' });
+    globalThis.mockAppInstance.context.getMeeting.mockResolvedValue({
+      title: 'Test Meeting',
+    });
     globalThis.mockAppInstance.clearShareUrl.mockResolvedValue();
     globalThis.mockAppInstance.setShareUrl.mockResolvedValue();
   });
@@ -58,7 +60,9 @@ describe('useWebex (real hook, mocked SDK)', () => {
   });
 
   it('handles SDK init failure gracefully', async () => {
-    globalThis.mockAppInstance.onReady.mockRejectedValueOnce(new Error('Webex init failed'));
+    globalThis.mockAppInstance.onReady.mockRejectedValueOnce(
+      new Error('Webex init failed'),
+    );
 
     const { result } = renderHook(() => useWebex());
 
@@ -68,5 +72,4 @@ describe('useWebex (real hook, mocked SDK)', () => {
     expect(result.current.isConnected).toBe(false);
     expect(result.current.isRunningInWebex).toBe(false);
   });
-  
 });
