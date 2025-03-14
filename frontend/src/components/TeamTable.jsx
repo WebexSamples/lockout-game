@@ -1,6 +1,5 @@
-// src/components/TeamTable.jsx
-import React from 'react';
-import PropTypes from 'prop-types';
+// frontend/src/components/TeamTable.jsx
+
 import {
   Table,
   TableBody,
@@ -8,86 +7,116 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Typography,
-  Button,
   Box,
+  Button,
+  Tooltip,
+  Paper,
 } from '@mui/material';
+import CheckIcon from '@mui/icons-material/CheckCircle';
+import TeamLeadIcon from '@mui/icons-material/WorkspacePremium';
+import HostIcon from '@mui/icons-material/Star';
+import PropTypes from 'prop-types';
 
-/**
- * Renders a participant list table for a given team.
- *
- * @param {Object} props
- * @param {string} teamLabel - Label to display for the team
- * @param {Array} participants - List of participants on the team
- * @param {Object} currentUser - The current user object
- * @param {Function} toggleReady - Handler to toggle user's ready state
- */
-const TeamTable = ({ teamLabel, participants, currentUser, toggleReady }) => {
-  const sortedParticipants = [...participants].sort((a, b) => {
-    if (a.is_team_lead && !b.is_team_lead) return -1;
-    if (!a.is_team_lead && b.is_team_lead) return 1;
-    return a.display_name.localeCompare(b.display_name);
-  });
+export default function TeamTable({
+  teamLabel,
+  participants,
+  currentUser,
+  toggleReady,
+}) {
+  const isCurrentUser = (participant) => participant.id === currentUser?.id;
 
   return (
-    <Box sx={{ mb: 4 }}>
+    <Box sx={{ mt: 4 }}>
       <Typography variant="h6" gutterBottom>
         {teamLabel}
       </Typography>
-      <TableContainer component={Paper}>
-        <Table>
+      <TableContainer component={Paper} elevation={1}>
+        <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Display Name</TableCell>
-              <TableCell align="center">Role</TableCell>
+              <TableCell>Player</TableCell>
+              <TableCell align="center">Roles</TableCell>
               <TableCell align="center">Ready</TableCell>
-              <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedParticipants.map((p) => {
-              const isCurrent = p.id === currentUser?.id;
-              return (
-                <TableRow key={p.id}>
-                  <TableCell>
-                    <Typography fontWeight={isCurrent ? 'bold' : 'normal'}>
-                      {p.display_name}{' '}
-                      {p.is_host && <span title="Host">🏆</span>}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    {p.is_team_lead ? 'Team Lead 🏅' : 'Member'}
-                  </TableCell>
-                  <TableCell align="center">
-                    {p.ready ? '✅ Ready' : '❌ Not Ready'}
-                  </TableCell>
-                  <TableCell align="right">
-                    {isCurrent && (
-                      <Button
-                        variant="contained"
-                        size="small"
-                        onClick={toggleReady}
-                      >
-                        {p.ready ? 'Unready' : 'Ready'}
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {participants.map((participant) => (
+              <TableRow
+                key={participant.id}
+                selected={isCurrentUser(participant)}
+              >
+                <TableCell>
+                  {participant.display_name}
+                  {isCurrentUser(participant) && ' (You)'}
+                </TableCell>
+
+                <TableCell align="center">
+                  {participant.is_team_lead && (
+                    <Tooltip title="Team Lead">
+                      <TeamLeadIcon
+                        fontSize="small"
+                        aria-label="Team Lead"
+                        sx={{ mx: 0.5 }}
+                      />
+                    </Tooltip>
+                  )}
+                  {participant.is_host && (
+                    <Tooltip title="Host">
+                      <HostIcon
+                        fontSize="small"
+                        aria-label="Host"
+                        sx={{ mx: 0.5 }}
+                      />
+                    </Tooltip>
+                  )}
+                </TableCell>
+
+                <TableCell align="center">
+                  {isCurrentUser(participant) ? (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={toggleReady}
+                      aria-label="Ready Button"
+                    >
+                      Ready
+                    </Button>
+                  ) : participant.is_ready ? (
+                    <Tooltip title="Ready">
+                      <CheckIcon
+                        fontSize="small"
+                        color="success"
+                        aria-label="Ready"
+                      />
+                    </Tooltip>
+                  ) : null}
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
     </Box>
   );
-};
+}
 
+// ✅ PropTypes
 TeamTable.propTypes = {
   teamLabel: PropTypes.string.isRequired,
-  participants: PropTypes.array.isRequired,
-  currentUser: PropTypes.object,
+  participants: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      display_name: PropTypes.string.isRequired,
+      team: PropTypes.string.isRequired,
+      is_ready: PropTypes.bool,
+      is_team_lead: PropTypes.bool,
+      is_host: PropTypes.bool,
+    }),
+  ).isRequired,
+  currentUser: PropTypes.shape({
+    id: PropTypes.string,
+    display_name: PropTypes.string,
+  }),
   toggleReady: PropTypes.func.isRequired,
 };
-
-export default TeamTable;

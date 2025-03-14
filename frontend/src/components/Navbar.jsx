@@ -1,37 +1,35 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+// frontend/src/components/Navbar.jsx
+
 import {
   AppBar,
+  IconButton,
   Toolbar,
   Typography,
-  IconButton,
+  Tooltip,
   Menu,
   MenuItem,
   CircularProgress,
-  Divider,
 } from '@mui/material';
-import {
-  Brightness4 as DarkModeIcon,
-  Brightness7 as LightModeIcon,
-  MoreVert as MenuIcon,
-  CheckCircle as OnlineIcon,
-  Error as OfflineIcon,
-  Warning as WarningIcon,
-  AccountCircle as UserIcon,
-  Videocam as MeetingIcon,
-} from '@mui/icons-material';
+import MenuIcon from '@mui/icons-material/Menu';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import CheckIcon from '@mui/icons-material/CheckCircle';
+import CrossIcon from '@mui/icons-material/Cancel';
+import ErrorIcon from '@mui/icons-material/Error';
+import { useState } from 'react';
+import PropTypes from 'prop-types'; // ✅ Import PropTypes
 import useWebex from '../hooks/useWebex';
 
-const Navbar = ({ darkMode, setDarkMode }) => {
+export default function Navbar({ darkMode, setDarkMode }) {
+  const [anchorEl, setAnchorEl] = useState(null);
   const {
     isConnected,
-    loading,
-    error,
+    isRunningInWebex,
     username,
     meetingName,
-    isRunningInWebex,
+    loading,
+    error,
   } = useWebex();
-  const [anchorEl, setAnchorEl] = useState(null);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -42,87 +40,77 @@ const Navbar = ({ darkMode, setDarkMode }) => {
   };
 
   return (
-    <AppBar position="static" color="primary">
+    <AppBar position="static" elevation={0}>
       <Toolbar>
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
           Webex Launchpad
         </Typography>
 
-        {/* Dark Mode Toggle */}
-        <IconButton color="inherit" onClick={() => setDarkMode(!darkMode)}>
-          {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
-        </IconButton>
+        <Tooltip title="Toggle dark mode">
+          <IconButton
+            color="inherit"
+            onClick={() => setDarkMode(!darkMode)}
+            aria-label="Toggle Dark Mode"
+          >
+            {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
+          </IconButton>
+        </Tooltip>
 
-        {/* Webex Status Dropdown */}
-        <IconButton color="inherit" onClick={handleMenuOpen}>
-          <MenuIcon />
-        </IconButton>
+        <Tooltip title="Webex Info">
+          <IconButton
+            color="inherit"
+            onClick={handleMenuOpen}
+            aria-label="Webex Info Menu"
+          >
+            <MenuIcon />
+          </IconButton>
+        </Tooltip>
+
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
-          {[
-            // Webex Status
-            <MenuItem key="status" disabled>
-              {loading ? (
-                <CircularProgress size={18} />
-              ) : isConnected ? (
-                <>
-                  <OnlineIcon color="success" sx={{ mr: 1 }} /> Connected to
-                  Webex
-                </>
-              ) : (
-                <>
-                  <OfflineIcon color="error" sx={{ mr: 1 }} /> Webex Not
-                  Connected
-                </>
+          {loading ? (
+            <MenuItem>
+              <CircularProgress size={18} />
+            </MenuItem>
+          ) : (
+            <>
+              <MenuItem>
+                {isConnected ? (
+                  <CheckIcon color="success" sx={{ mr: 1 }} />
+                ) : (
+                  <CrossIcon color="error" sx={{ mr: 1 }} />
+                )}
+                {isConnected ? 'Connected to Webex' : 'Webex Not Connected'}
+              </MenuItem>
+
+              {!isRunningInWebex && (
+                <MenuItem>
+                  <ErrorIcon color="warning" sx={{ mr: 1 }} />
+                  Running Outside Webex
+                </MenuItem>
               )}
-            </MenuItem>,
 
-            // Webex Running Environment
-            !isRunningInWebex &&
-              ((<Divider key="divider-outside-webex" />),
-              (
-                <MenuItem key="outside-webex" disabled>
-                  <WarningIcon color="warning" sx={{ mr: 1 }} /> Running Outside
-                  Webex
+              {username && <MenuItem>{username}</MenuItem>}
+              {meetingName && <MenuItem>{meetingName}</MenuItem>}
+              {error && (
+                <MenuItem>
+                  <ErrorIcon color="error" sx={{ mr: 1 }} />
+                  {error}
                 </MenuItem>
-              )),
-
-            // Webex User Info (Only Show If Inside Webex)
-            isRunningInWebex &&
-              ((<Divider key="divider-user-info" />),
-              (
-                <MenuItem key="username" disabled>
-                  <UserIcon sx={{ mr: 1 }} /> {username}
-                </MenuItem>
-              ),
-              (
-                <MenuItem key="meeting-name" disabled>
-                  <MeetingIcon sx={{ mr: 1 }} /> {meetingName}
-                </MenuItem>
-              )),
-
-            // Show Error if Connection Fails
-            error &&
-              ((<Divider key="divider-error" />),
-              (
-                <MenuItem key="error" disabled>
-                  Error: {error}
-                </MenuItem>
-              )),
-          ].filter(Boolean)}{' '}
-          {/* Filter out falsy values like `false` */}
+              )}
+            </>
+          )}
         </Menu>
       </Toolbar>
     </AppBar>
   );
-};
+}
 
+// ✅ Add PropTypes definition
 Navbar.propTypes = {
   darkMode: PropTypes.bool.isRequired,
   setDarkMode: PropTypes.func.isRequired,
 };
-
-export default Navbar;
