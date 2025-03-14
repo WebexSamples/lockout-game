@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// src/App.jsx
+import React, { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import {
   CssBaseline,
@@ -10,7 +11,6 @@ import CreateLobby from './components/CreateLobby';
 import Lobby from './components/Lobby';
 import Navbar from './components/Navbar';
 import LandingPage from './components/LandingPage';
-import BreadcrumbsNav from './components/BreadcrumbsNav';
 import useWebex from './hooks/useWebex';
 import { ROUTES } from './constants';
 
@@ -18,15 +18,12 @@ function App() {
   const { theme: webexTheme } = useWebex();
   const [darkMode, setDarkMode] = useState(false);
 
-  // Sync theme when Webex environment is detected
   useEffect(() => {
     setDarkMode(webexTheme === 'dark');
   }, [webexTheme]);
 
   const theme = createTheme({
-    palette: {
-      mode: darkMode ? 'dark' : 'light',
-    },
+    palette: { mode: darkMode ? 'dark' : 'light' },
   });
 
   return (
@@ -36,24 +33,8 @@ function App() {
       <Container>
         <Routes>
           <Route path={ROUTES.HOME} element={<LandingPage />} />
-          <Route
-            path={ROUTES.LOBBY}
-            element={
-              <>
-                <BreadcrumbsNav />
-                <CreateLobby />
-              </>
-            }
-          />
-          <Route
-            path={ROUTES.LOBBY_WITH_ID(':lobbyId')}
-            element={
-              <>
-                <BreadcrumbsNav />
-                <Lobby />
-              </>
-            }
-          />
+          <Route path={ROUTES.LOBBY} element={<CreateLobby />} />
+          <Route path={ROUTES.LOBBY_WITH_ID(':lobbyId')} element={<Lobby />} />
           <Route path="*" element={<LandingPage />} />
         </Routes>
       </Container>

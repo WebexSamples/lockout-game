@@ -1,40 +1,43 @@
+// src/components/LobbyDetails.jsx
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Card, CardContent, Typography, Link, Button } from '@mui/material';
 import useWebex from '../hooks/useWebex';
+import { useLobbyContext } from '../context/useLobbyContext';
 
-const LobbyDetails = ({ lobbyId, lobbyName, lobbyUrl }) => {
+/**
+ * Displays key lobby information and Webex sharing controls.
+ */
+const LobbyDetails = () => {
   const { isShared, isRunningInWebex, toggleShare } = useWebex();
+  const { lobby, lobbyUrl } = useLobbyContext();
 
   return (
     <Card sx={{ mb: 3 }}>
       <CardContent>
         <Typography variant="h5" fontWeight="bold">
-          {lobbyName}
+          {lobby?.lobby_name || 'Lobby'}
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          Lobby ID: {lobbyId}
+          Lobby ID: {lobby?.lobbyId}
         </Typography>
         <Typography variant="body2">
           Lobby URL:{' '}
-          <Link href={lobbyUrl} target="_blank">
+          <Link href={lobbyUrl} target="_blank" rel="noopener noreferrer">
             {lobbyUrl}
           </Link>
         </Typography>
 
-        {/* Share Status */}
         <Typography variant="body1" sx={{ mt: 2 }}>
           <strong>Lobby Sharing:</strong>{' '}
           {isShared ? 'Active ✅' : 'Inactive ❌'}
         </Typography>
 
-        {/* Toggle Share Button */}
         <Button
           variant="contained"
           color={isShared ? 'error' : 'primary'}
           sx={{ mt: 2 }}
           onClick={() => toggleShare(lobbyUrl)}
-          disabled={!isRunningInWebex} // Disable if not in Webex
+          disabled={!isRunningInWebex}
         >
           {isShared ? 'Deactivate Shared Lobby' : 'Activate Shared Lobby'}
         </Button>
@@ -51,12 +54,6 @@ const LobbyDetails = ({ lobbyId, lobbyName, lobbyUrl }) => {
       </CardContent>
     </Card>
   );
-};
-
-LobbyDetails.propTypes = {
-  lobbyId: PropTypes.string.isRequired,
-  lobbyName: PropTypes.string.isRequired,
-  lobbyUrl: PropTypes.string.isRequired,
 };
 
 export default LobbyDetails;

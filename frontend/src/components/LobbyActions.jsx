@@ -1,5 +1,5 @@
+// src/components/LobbyActions.jsx
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   Card,
   CardContent,
@@ -13,31 +13,33 @@ import {
   DialogActions,
   Grid2,
 } from '@mui/material';
+import { useLobbyContext } from '../context/useLobbyContext';
 
-const LobbyActions = ({
-  currentUser,
-  newDisplayName,
-  setNewDisplayName,
-  updateDisplayName,
-  leaveLobby,
-  toggleTeam,
-  requestTeamLead,
-  demoteTeamLead,
-  isUserTeamLead,
-  hasTeamLead,
-}) => {
+/**
+ * User actions: update name, switch team, team lead management, leave lobby.
+ */
+const LobbyActions = () => {
+  const {
+    user,
+    updateDisplayName,
+    leaveLobby,
+    toggleTeam,
+    requestTeamLead,
+    demoteTeamLead,
+    isUserTeamLead,
+    hasTeamLead,
+  } = useLobbyContext();
+
+  const [newDisplayName, setNewDisplayName] = useState('');
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
 
-  const handleLeaveLobby = () => {
-    setLeaveConfirmOpen(true);
-  };
-
+  const handleLeaveLobby = () => setLeaveConfirmOpen(true);
   const confirmLeaveLobby = () => {
     leaveLobby();
     setLeaveConfirmOpen(false);
   };
 
-  if (!currentUser) return null;
+  if (!user) return null;
 
   return (
     <Card sx={{ mt: 3 }}>
@@ -84,7 +86,7 @@ const LobbyActions = ({
                 fullWidth
                 variant="outlined"
                 onClick={requestTeamLead}
-                disabled={hasTeamLead(currentUser.id)}
+                disabled={hasTeamLead(user.id)}
               >
                 Become Team Lead
               </Button>
@@ -137,19 +139,6 @@ const LobbyActions = ({
       </Dialog>
     </Card>
   );
-};
-
-LobbyActions.propTypes = {
-  currentUser: PropTypes.object.isRequired,
-  newDisplayName: PropTypes.string.isRequired,
-  setNewDisplayName: PropTypes.func.isRequired,
-  updateDisplayName: PropTypes.func.isRequired,
-  leaveLobby: PropTypes.func.isRequired,
-  toggleTeam: PropTypes.func,
-  requestTeamLead: PropTypes.func,
-  demoteTeamLead: PropTypes.func,
-  isUserTeamLead: PropTypes.func,
-  hasTeamLead: PropTypes.func,
 };
 
 export default LobbyActions;
