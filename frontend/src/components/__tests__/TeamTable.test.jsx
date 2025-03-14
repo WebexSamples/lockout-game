@@ -5,134 +5,235 @@ import { renderWithLobbyContext } from '../../test/testUtils';
 import { createMockLobbyContext } from '../../test/mocks/mockLobbyContext';
 import { TEAMS } from '../../constants';
 
+const teamLabel = 'Team 1';
+
 describe('TeamTable', () => {
-  const teamLabel = 'Team 1';
+  describe('Current User Scenarios', () => {
+    it('renders Not Ready icon button when current user is not ready', () => {
+      const toggleReady = vi.fn();
+      const currentUser = { id: 'user-1', display_name: 'Alice' };
+      const context = createMockLobbyContext({ user: currentUser });
 
-  const participants = [
-    {
-      id: 'user-1',
-      display_name: 'Alice',
-      team: TEAMS.TEAM1,
-      is_ready: false,
-      is_team_lead: true,
-      is_host: false,
-    },
-    {
-      id: 'user-2',
-      display_name: 'Bob',
-      team: TEAMS.TEAM1,
-      is_ready: true,
-      is_team_lead: false,
-      is_host: true,
-    },
-    {
-      id: 'user-3',
-      display_name: 'Charlie',
-      team: TEAMS.TEAM1,
-      is_ready: false,
-      is_team_lead: false,
-      is_host: false,
-    },
-  ];
+      const participants = [
+        {
+          id: 'user-1',
+          display_name: 'Alice',
+          team: TEAMS.TEAM1,
+          ready: false,
+        },
+      ];
 
-  it('renders all participants', () => {
-    const context = createMockLobbyContext({
-      user: { id: 'user-2', display_name: 'Bob' },
+      renderWithLobbyContext(
+        <TeamTable
+          teamLabel={teamLabel}
+          participants={participants}
+          currentUser={currentUser}
+          toggleReady={toggleReady}
+        />,
+        context,
+      );
+
+      const button = screen.getByRole('button', { name: /Not Ready/i });
+      expect(button).toBeInTheDocument();
+      expect(button.tagName.toLowerCase()).toBe('button');
+      fireEvent.click(button);
+      expect(toggleReady).toHaveBeenCalled();
     });
 
-    renderWithLobbyContext(
-      <TeamTable
-        teamLabel={teamLabel}
-        participants={participants}
-        currentUser={context.user}
-        toggleReady={context.toggleReady}
-      />,
-      context,
-    );
+    it('renders Ready icon button when current user is ready', () => {
+      const toggleReady = vi.fn();
+      const currentUser = { id: 'user-1', display_name: 'Alice' };
+      const context = createMockLobbyContext({ user: currentUser });
 
-    // ✅ Use flexible matchers to allow for "(You)" suffix
-    expect(
-      screen.getByText((text) => text.includes('Alice')),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText((text) => text.includes('Bob')),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText((text) => text.includes('Charlie')),
-    ).toBeInTheDocument();
-  });
+      const participants = [
+        {
+          id: 'user-1',
+          display_name: 'Alice',
+          team: TEAMS.TEAM1,
+          ready: true,
+        },
+      ];
 
-  it('highlights current user and shows "You"', () => {
-    const context = createMockLobbyContext({
-      user: { id: 'user-3', display_name: 'Charlie' },
+      renderWithLobbyContext(
+        <TeamTable
+          teamLabel={teamLabel}
+          participants={participants}
+          currentUser={currentUser}
+          toggleReady={toggleReady}
+        />,
+        context,
+      );
+
+      const button = screen.getByRole('button', { name: /Ready/i });
+      expect(button).toBeInTheDocument();
+      expect(button.tagName.toLowerCase()).toBe('button');
+      fireEvent.click(button);
+      expect(toggleReady).toHaveBeenCalled();
     });
 
-    renderWithLobbyContext(
-      <TeamTable
-        teamLabel={teamLabel}
-        participants={participants}
-        currentUser={context.user}
-        toggleReady={context.toggleReady}
-      />,
-      context,
-    );
+    it('shows display name and (You) label for current user', () => {
+      const context = createMockLobbyContext({
+        user: { id: 'user-3', display_name: 'Charlie' },
+      });
 
-    expect(
-      screen.getByText((text) => text.includes('Charlie')),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/You/i)).toBeInTheDocument();
+      const participants = [
+        {
+          id: 'user-3',
+          display_name: 'Charlie',
+          team: TEAMS.TEAM1,
+          ready: false,
+        },
+      ];
+
+      renderWithLobbyContext(
+        <TeamTable
+          teamLabel={teamLabel}
+          participants={participants}
+          currentUser={context.user}
+          toggleReady={context.toggleReady}
+        />,
+        context,
+      );
+
+      expect(screen.getByText(/Charlie/i)).toBeInTheDocument();
+      expect(screen.getByText(/You/i)).toBeInTheDocument();
+    });
   });
 
-  it('calls toggleReady when current user clicks "Ready"', () => {
-    const toggleReady = vi.fn();
-    const context = createMockLobbyContext({
-      user: { id: 'user-1', display_name: 'Alice' },
+  describe('Non-Current User Scenarios', () => {
+    it('renders static Ready icon for non-current user when ready', () => {
+      const context = createMockLobbyContext({
+        user: { id: 'user-3', display_name: 'Charlie' },
+      });
+
+      const participants = [
+        {
+          id: 'user-1',
+          display_name: 'Alice',
+          team: TEAMS.TEAM1,
+          ready: true,
+        },
+      ];
+
+      renderWithLobbyContext(
+        <TeamTable
+          teamLabel={teamLabel}
+          participants={participants}
+          currentUser={context.user}
+          toggleReady={context.toggleReady}
+        />,
+        context,
+      );
+
+      const icon = screen.getByLabelText(/Ready/i);
+      expect(icon.tagName.toLowerCase()).toBe('svg');
     });
 
-    renderWithLobbyContext(
-      <TeamTable
-        teamLabel={teamLabel}
-        participants={participants}
-        currentUser={context.user}
-        toggleReady={toggleReady}
-      />,
-      context,
-    );
+    it('renders static Not Ready icon for non-current user when not ready', () => {
+      const context = createMockLobbyContext({
+        user: { id: 'user-3', display_name: 'Charlie' },
+      });
 
-    fireEvent.click(screen.getByRole('button', { name: /Ready/i }));
-    expect(toggleReady).toHaveBeenCalled();
+      const participants = [
+        {
+          id: 'user-1',
+          display_name: 'Alice',
+          team: TEAMS.TEAM1,
+          ready: false,
+        },
+      ];
+
+      renderWithLobbyContext(
+        <TeamTable
+          teamLabel={teamLabel}
+          participants={participants}
+          currentUser={context.user}
+          toggleReady={context.toggleReady}
+        />,
+        context,
+      );
+
+      const icon = screen.getByLabelText(/Not Ready/i);
+      expect(icon.tagName.toLowerCase()).toBe('svg');
+    });
   });
 
-  it('shows team lead and host badges', () => {
-    const context = createMockLobbyContext();
+  describe('General TeamTable UI', () => {
+    it('renders all participant names', () => {
+      const context = createMockLobbyContext({
+        user: { id: 'user-2', display_name: 'Bob' },
+      });
 
-    renderWithLobbyContext(
-      <TeamTable
-        teamLabel={teamLabel}
-        participants={participants}
-        currentUser={context.user}
-        toggleReady={context.toggleReady}
-      />,
-      context,
-    );
+      const participants = [
+        {
+          id: 'user-1',
+          display_name: 'Alice',
+          team: TEAMS.TEAM1,
+          ready: false,
+        },
+        {
+          id: 'user-2',
+          display_name: 'Bob',
+          team: TEAMS.TEAM1,
+          ready: true,
+        },
+        {
+          id: 'user-3',
+          display_name: 'Charlie',
+          team: TEAMS.TEAM1,
+          ready: false,
+        },
+      ];
 
-    expect(screen.getAllByLabelText(/Team Lead/i)).toHaveLength(1);
-    expect(screen.getAllByLabelText(/Host/i)).toHaveLength(1);
-  });
+      renderWithLobbyContext(
+        <TeamTable
+          teamLabel={teamLabel}
+          participants={participants}
+          currentUser={context.user}
+          toggleReady={context.toggleReady}
+        />,
+        context,
+      );
 
-  it('shows ready status check icon for ready players', () => {
-    const context = createMockLobbyContext();
+      expect(screen.getByText(/Alice/)).toBeInTheDocument();
+      expect(screen.getByText(/Bob/)).toBeInTheDocument();
+      expect(screen.getByText(/Charlie/)).toBeInTheDocument();
+    });
 
-    renderWithLobbyContext(
-      <TeamTable
-        teamLabel={teamLabel}
-        participants={participants}
-        currentUser={context.user}
-        toggleReady={context.toggleReady}
-      />,
-      context,
-    );
+    it('shows team lead and host badges', () => {
+      const context = createMockLobbyContext();
 
-    expect(screen.getAllByLabelText(/Ready/i).length).toBeGreaterThan(0);
+      const participants = [
+        {
+          id: 'user-1',
+          display_name: 'Alice',
+          team: TEAMS.TEAM1,
+          ready: false,
+          is_team_lead: true,
+          is_host: false,
+        },
+        {
+          id: 'user-2',
+          display_name: 'Bob',
+          team: TEAMS.TEAM1,
+          ready: true,
+          is_team_lead: false,
+          is_host: true,
+        },
+      ];
+
+      renderWithLobbyContext(
+        <TeamTable
+          teamLabel={teamLabel}
+          participants={participants}
+          currentUser={context.user}
+          toggleReady={context.toggleReady}
+        />,
+        context,
+      );
+
+      expect(screen.getAllByLabelText(/Team Lead/i)).toHaveLength(1);
+      expect(screen.getAllByLabelText(/Host/i)).toHaveLength(1);
+    });
   });
 });

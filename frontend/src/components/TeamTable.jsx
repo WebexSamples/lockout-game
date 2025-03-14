@@ -9,11 +9,12 @@ import {
   TableRow,
   Typography,
   Box,
-  Button,
+  IconButton,
   Tooltip,
   Paper,
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/CheckCircle';
+import NotReadyIcon from '@mui/icons-material/HighlightOff';
 import TeamLeadIcon from '@mui/icons-material/WorkspacePremium';
 import HostIcon from '@mui/icons-material/Star';
 import PropTypes from 'prop-types';
@@ -41,59 +42,74 @@ export default function TeamTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {participants.map((participant) => (
-              <TableRow
-                key={participant.id}
-                selected={isCurrentUser(participant)}
-              >
-                <TableCell>
-                  {participant.display_name}
-                  {isCurrentUser(participant) && ' (You)'}
-                </TableCell>
+            {participants.map((participant) => {
+              const isSelf = isCurrentUser(participant);
+              const isReady = participant.ready;
 
-                <TableCell align="center">
-                  {participant.is_team_lead && (
-                    <Tooltip title="Team Lead">
-                      <TeamLeadIcon
-                        fontSize="small"
-                        aria-label="Team Lead"
-                        sx={{ mx: 0.5 }}
-                      />
-                    </Tooltip>
-                  )}
-                  {participant.is_host && (
-                    <Tooltip title="Host">
-                      <HostIcon
-                        fontSize="small"
-                        aria-label="Host"
-                        sx={{ mx: 0.5 }}
-                      />
-                    </Tooltip>
-                  )}
-                </TableCell>
+              return (
+                <TableRow key={participant.id} selected={isSelf}>
+                  <TableCell>
+                    {participant.display_name}
+                    {isSelf && ' (You)'}
+                  </TableCell>
 
-                <TableCell align="center">
-                  {isCurrentUser(participant) ? (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={toggleReady}
-                      aria-label="Ready Button"
-                    >
-                      Ready
-                    </Button>
-                  ) : participant.is_ready ? (
-                    <Tooltip title="Ready">
-                      <CheckIcon
-                        fontSize="small"
-                        color="success"
-                        aria-label="Ready"
-                      />
-                    </Tooltip>
-                  ) : null}
-                </TableCell>
-              </TableRow>
-            ))}
+                  <TableCell align="center">
+                    {participant.is_team_lead && (
+                      <Tooltip title="Team Lead">
+                        <TeamLeadIcon
+                          fontSize="small"
+                          aria-label="Team Lead"
+                          sx={{ mx: 0.5 }}
+                        />
+                      </Tooltip>
+                    )}
+                    {participant.is_host && (
+                      <Tooltip title="Host">
+                        <HostIcon
+                          fontSize="small"
+                          aria-label="Host"
+                          sx={{ mx: 0.5 }}
+                        />
+                      </Tooltip>
+                    )}
+                  </TableCell>
+
+                  <TableCell align="center">
+                    {isSelf ? (
+                      <Tooltip title={isReady ? 'Ready' : 'Not Ready'}>
+                        <IconButton
+                          aria-label={isReady ? 'Ready' : 'Not Ready'}
+                          onClick={toggleReady}
+                          size="small"
+                        >
+                          {isReady ? (
+                            <CheckIcon color="success" fontSize="small" />
+                          ) : (
+                            <NotReadyIcon color="warning" fontSize="small" />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                    ) : isReady ? (
+                      <Tooltip title="Ready">
+                        <CheckIcon
+                          fontSize="small"
+                          color="success"
+                          aria-label="Ready"
+                        />
+                      </Tooltip>
+                    ) : (
+                      <Tooltip title="Not Ready">
+                        <NotReadyIcon
+                          fontSize="small"
+                          color="disabled"
+                          aria-label="Not Ready"
+                        />
+                      </Tooltip>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
@@ -101,7 +117,6 @@ export default function TeamTable({
   );
 }
 
-// ✅ PropTypes
 TeamTable.propTypes = {
   teamLabel: PropTypes.string.isRequired,
   participants: PropTypes.arrayOf(
@@ -109,7 +124,7 @@ TeamTable.propTypes = {
       id: PropTypes.string.isRequired,
       display_name: PropTypes.string.isRequired,
       team: PropTypes.string.isRequired,
-      is_ready: PropTypes.bool,
+      ready: PropTypes.bool,
       is_team_lead: PropTypes.bool,
       is_host: PropTypes.bool,
     }),

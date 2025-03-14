@@ -17,7 +17,7 @@ import CheckIcon from '@mui/icons-material/CheckCircle';
 import CrossIcon from '@mui/icons-material/Cancel';
 import ErrorIcon from '@mui/icons-material/Error';
 import { useState } from 'react';
-import PropTypes from 'prop-types'; // ✅ Import PropTypes
+import PropTypes from 'prop-types';
 import useWebex from '../hooks/useWebex';
 
 export default function Navbar({ darkMode, setDarkMode }) {
@@ -46,6 +46,7 @@ export default function Navbar({ darkMode, setDarkMode }) {
           Webex Launchpad
         </Typography>
 
+        {/* Dark mode toggle */}
         <Tooltip title="Toggle dark mode">
           <IconButton
             color="inherit"
@@ -56,6 +57,7 @@ export default function Navbar({ darkMode, setDarkMode }) {
           </IconButton>
         </Tooltip>
 
+        {/* Webex Info Menu */}
         <Tooltip title="Webex Info">
           <IconButton
             color="inherit"
@@ -76,32 +78,36 @@ export default function Navbar({ darkMode, setDarkMode }) {
               <CircularProgress size={18} />
             </MenuItem>
           ) : (
-            <>
-              <MenuItem>
+            [
+              <MenuItem key="status">
                 {isConnected ? (
                   <CheckIcon color="success" sx={{ mr: 1 }} />
                 ) : (
                   <CrossIcon color="error" sx={{ mr: 1 }} />
                 )}
                 {isConnected ? 'Connected to Webex' : 'Webex Not Connected'}
-              </MenuItem>
+              </MenuItem>,
 
-              {!isRunningInWebex && (
-                <MenuItem>
+              !isRunningInWebex && (
+                <MenuItem key="not-webex">
                   <ErrorIcon color="warning" sx={{ mr: 1 }} />
                   Running Outside Webex
                 </MenuItem>
-              )}
+              ),
 
-              {username && <MenuItem>{username}</MenuItem>}
-              {meetingName && <MenuItem>{meetingName}</MenuItem>}
-              {error && (
-                <MenuItem>
+              username && <MenuItem key="username">{username}</MenuItem>,
+
+              meetingName && (
+                <MenuItem key="meetingName">{meetingName}</MenuItem>
+              ),
+
+              error && (
+                <MenuItem key="error">
                   <ErrorIcon color="error" sx={{ mr: 1 }} />
                   {error}
                 </MenuItem>
-              )}
-            </>
+              ),
+            ]
           )}
         </Menu>
       </Toolbar>
@@ -109,7 +115,7 @@ export default function Navbar({ darkMode, setDarkMode }) {
   );
 }
 
-// ✅ Add PropTypes definition
+// ✅ PropTypes
 Navbar.propTypes = {
   darkMode: PropTypes.bool.isRequired,
   setDarkMode: PropTypes.func.isRequired,
