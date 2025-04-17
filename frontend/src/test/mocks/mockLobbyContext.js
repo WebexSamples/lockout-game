@@ -20,6 +20,7 @@ export const createMockLobbyContext = (overrides = {}) => ({
   demoteTeamLead: vi.fn(),
   isUserTeamLead: vi.fn(() => false),
   hasTeamLead: vi.fn(() => false),
+  getCurrentTeam: vi.fn(() => overrides.userTeam || null),
   user: { id: 'user1', display_name: 'TestUser' },
   setUser: vi.fn(),
   ...overrides,

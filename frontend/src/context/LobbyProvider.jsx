@@ -37,6 +37,33 @@ export const LobbyProvider = ({ lobbyId, initialUser, children }) => {
       .finally(() => setLoading(false));
   }, [lobbyId]);
 
+  const getCurrentTeam = useCallback(() => {
+    const p = lobby?.participants?.find((p) => p.id === user?.id);
+    return p?.team || null;
+  }, [lobby, user]);
+
+  useEffect(() => {
+    // Sync team data with user object
+    if (user && lobby?.participants) {
+      const participant = lobby.participants.find((p) => p.id === user.id);
+      if (participant && participant.team !== user.team) {
+        setUser((prevUser) => ({
+          ...prevUser,
+          team: participant.team,
+          is_team_lead: participant.is_team_lead,
+        }));
+        localStorage.setItem(
+          `lobbyUser-${lobbyId}`,
+          JSON.stringify({
+            ...user,
+            team: participant.team,
+            is_team_lead: participant.is_team_lead,
+          }),
+        );
+      }
+    }
+  }, [lobby, user, lobbyId]);
+
   useEffect(() => {
     const handleUpdate = (data) => {
       setLobby(data);
@@ -105,11 +132,6 @@ export const LobbyProvider = ({ lobbyId, initialUser, children }) => {
     });
   }, [user, lobby, lobbyId, socket]);
 
-  const getCurrentTeam = useCallback(() => {
-    const p = lobby?.participants?.find((p) => p.id === user?.id);
-    return p?.team || null;
-  }, [lobby, user]);
-
   const hasTeamLead = useCallback(
     (excludeUserId = null) => {
       const team = getCurrentTeam();
@@ -159,6 +181,7 @@ export const LobbyProvider = ({ lobbyId, initialUser, children }) => {
       hasTeamLead,
       user,
       setUser,
+      getCurrentTeam, // Expose the getCurrentTeam function in context
     }),
     [
       lobby,
@@ -176,6 +199,7 @@ export const LobbyProvider = ({ lobbyId, initialUser, children }) => {
       hasTeamLead,
       user,
       setUser,
+      getCurrentTeam,
     ],
   );
 

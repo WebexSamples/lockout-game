@@ -12,26 +12,74 @@ import {
   IconButton,
   Tooltip,
   Paper,
+  Button,
+  Stack,
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/CheckCircle';
 import NotReadyIcon from '@mui/icons-material/HighlightOff';
 import TeamLeadIcon from '@mui/icons-material/WorkspacePremium';
 import HostIcon from '@mui/icons-material/Star';
 import PropTypes from 'prop-types';
+import { useLobbyContext } from '../context/useLobbyContext';
 
 export default function TeamTable({
   teamLabel,
   participants,
   currentUser,
   toggleReady,
+  isCurrentUserTeam,
 }) {
   const isCurrentUser = (participant) => participant.id === currentUser?.id;
+  const {
+    requestTeamLead,
+    demoteTeamLead,
+    toggleTeam,
+    isUserTeamLead,
+    hasTeamLead,
+  } = useLobbyContext();
 
   return (
     <Box sx={{ mt: 4 }}>
-      <Typography variant="h6" gutterBottom>
-        {teamLabel}
-      </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Typography variant="h6" gutterBottom>
+          {teamLabel}
+        </Typography>
+        {currentUser && (
+          <Stack direction="row" spacing={1}>
+            {isCurrentUserTeam && !isUserTeamLead() && (
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={requestTeamLead}
+                disabled={hasTeamLead(currentUser.id)}
+              >
+                Become Team Lead
+              </Button>
+            )}
+            {isCurrentUserTeam && isUserTeamLead() && (
+              <Button
+                variant="outlined"
+                color="secondary"
+                size="small"
+                onClick={demoteTeamLead}
+              >
+                Step Down
+              </Button>
+            )}
+            {!isCurrentUserTeam && (
+              <Button variant="outlined" size="small" onClick={toggleTeam}>
+                Switch Team
+              </Button>
+            )}
+          </Stack>
+        )}
+      </Box>
       <TableContainer component={Paper} elevation={1}>
         <Table size="small">
           <TableHead>
@@ -134,4 +182,5 @@ TeamTable.propTypes = {
     display_name: PropTypes.string,
   }),
   toggleReady: PropTypes.func.isRequired,
+  isCurrentUserTeam: PropTypes.bool,
 };
