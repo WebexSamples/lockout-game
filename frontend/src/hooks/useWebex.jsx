@@ -27,8 +27,22 @@ const useWebex = () => {
   const [meetingName, setMeetingName] = useState(null);
   const [theme, setTheme] = useState('light'); // Default to light theme
 
+  // Check for query parameter to disable Webex
+  const isWebexDisabled =
+    new URLSearchParams(window.location.search).get('disableWebex') === 'true';
+
   useEffect(() => {
     const initializeWebex = async () => {
+      // If Webex is disabled via query parameter, skip initialization
+      if (isWebexDisabled) {
+        setIsRunningInWebex(false);
+        setLoading(false);
+        setUsername('Unknown User (Webex Disabled)');
+        setMeetingName('No Active Meeting');
+        setTheme('light');
+        return;
+      }
+
       try {
         const app = new Application();
 
@@ -84,7 +98,7 @@ const useWebex = () => {
     };
 
     initializeWebex();
-  }, []);
+  }, [isWebexDisabled]);
 
   /**
    * Toggles the shared state of the lobby.
