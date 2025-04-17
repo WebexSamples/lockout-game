@@ -236,4 +236,116 @@ describe('TeamTable', () => {
       expect(screen.getAllByLabelText(/Host/i)).toHaveLength(1);
     });
   });
+
+  describe('Team Lead Actions', () => {
+    it('shows Become Team Lead button when user is on the team but not a team lead', () => {
+      const currentUser = { id: 'user-1', display_name: 'Alice' };
+      const mockContext = createMockLobbyContext({
+        user: currentUser,
+        isUserTeamLead: vi.fn(() => false),
+        hasTeamLead: vi.fn(() => false),
+      });
+
+      const participants = [
+        {
+          id: 'user-1',
+          display_name: 'Alice',
+          team: TEAMS.TEAM1,
+          ready: false,
+          is_team_lead: false,
+        },
+      ];
+
+      renderWithLobbyContext(
+        <TeamTable
+          teamLabel={teamLabel}
+          participants={participants}
+          currentUser={currentUser}
+          toggleReady={vi.fn()}
+          isCurrentUserTeam={true}
+        />,
+        mockContext,
+      );
+
+      const button = screen.getByRole('button', { name: /Become Team Lead/i });
+      expect(button).toBeInTheDocument();
+
+      fireEvent.click(button);
+      expect(mockContext.requestTeamLead).toHaveBeenCalled();
+    });
+
+    it('shows Step Down button when user is on the team and is a team lead', () => {
+      const currentUser = { id: 'user-1', display_name: 'Alice' };
+      const mockContext = createMockLobbyContext({
+        user: currentUser,
+        isUserTeamLead: vi.fn(() => true),
+      });
+
+      const participants = [
+        {
+          id: 'user-1',
+          display_name: 'Alice',
+          team: TEAMS.TEAM1,
+          ready: false,
+          is_team_lead: true,
+        },
+      ];
+
+      renderWithLobbyContext(
+        <TeamTable
+          teamLabel={teamLabel}
+          participants={participants}
+          currentUser={currentUser}
+          toggleReady={vi.fn()}
+          isCurrentUserTeam={true}
+        />,
+        mockContext,
+      );
+
+      const button = screen.getByRole('button', { name: /Step Down/i });
+      expect(button).toBeInTheDocument();
+
+      fireEvent.click(button);
+      expect(mockContext.demoteTeamLead).toHaveBeenCalled();
+    });
+
+    it('does not show Step Down button when user is not on the team', () => {
+      const currentUser = { id: 'user-1', display_name: 'Alice' };
+      const mockContext = createMockLobbyContext({
+        user: currentUser,
+        isUserTeamLead: vi.fn(() => true),
+      });
+
+      const participants = [
+        {
+          id: 'user-1',
+          display_name: 'Alice',
+          team: TEAMS.TEAM1,
+          ready: false,
+          is_team_lead: true,
+        },
+      ];
+
+      renderWithLobbyContext(
+        <TeamTable
+          teamLabel={teamLabel}
+          participants={participants}
+          currentUser={currentUser}
+          toggleReady={vi.fn()}
+          isCurrentUserTeam={false}
+        />,
+        mockContext,
+      );
+
+      const stepDownButton = screen.queryByRole('button', {
+        name: /Step Down/i,
+      });
+      expect(stepDownButton).not.toBeInTheDocument();
+
+      const switchTeamButton = screen.getByRole('button', {
+        name: /Switch Team/i,
+      });
+      expect(switchTeamButton).toBeInTheDocument();
+    });
+  });
 });

@@ -16,19 +16,10 @@ import {
 import { useLobbyContext } from '../context/useLobbyContext';
 
 /**
- * User actions: update name, switch team, team lead management, leave lobby.
+ * User actions: update name, leave lobby.
  */
 const LobbyActions = () => {
-  const {
-    user,
-    updateDisplayName,
-    leaveLobby,
-    toggleTeam,
-    requestTeamLead,
-    demoteTeamLead,
-    isUserTeamLead,
-    hasTeamLead,
-  } = useLobbyContext();
+  const { user, updateDisplayName, leaveLobby } = useLobbyContext();
 
   const [newDisplayName, setNewDisplayName] = useState('');
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
@@ -69,43 +60,6 @@ const LobbyActions = () => {
             </Button>
           </Grid2>
 
-          <Grid2 size={{ xs: 12, sm: 4 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={toggleTeam}
-              disabled={!toggleTeam}
-            >
-              Switch Team
-            </Button>
-          </Grid2>
-
-          {!isUserTeamLead() && (
-            <Grid2 size={{ xs: 12, sm: 4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={requestTeamLead}
-                disabled={hasTeamLead(user.id)}
-              >
-                Become Team Lead
-              </Button>
-            </Grid2>
-          )}
-
-          {isUserTeamLead() && (
-            <Grid2 size={{ xs: 12, sm: 4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                color="warning"
-                onClick={demoteTeamLead}
-              >
-                Demote Self
-              </Button>
-            </Grid2>
-          )}
-
           <Grid2 size={12}>
             <Button
               fullWidth
@@ -126,8 +80,8 @@ const LobbyActions = () => {
         <DialogTitle>Leave Lobby</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to leave the lobby? You’ll be removed from the
-            game and may have to rejoin manually.
+            Are you sure you want to leave the lobby? You&apos;ll be removed
+            from the game and may have to rejoin manually.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
