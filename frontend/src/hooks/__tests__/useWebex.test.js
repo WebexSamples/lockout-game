@@ -72,4 +72,23 @@ describe('useWebex (real hook, mocked SDK)', () => {
     expect(result.current.isConnected).toBe(false);
     expect(result.current.isRunningInWebex).toBe(false);
   });
+
+  it('disables Webex SDK initialization when query parameter is set', async () => {
+    // Mock the URL to include the disableWebex query parameter
+    const originalLocation = window.location;
+    delete window.location;
+    window.location = new URL('http://localhost?disableWebex=true');
+
+    const { result } = renderHook(() => useWebex());
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.isRunningInWebex).toBe(false);
+    expect(result.current.username).toBe('Unknown User (Webex Disabled)');
+    expect(result.current.meetingName).toBe('No Active Meeting');
+    expect(result.current.theme).toBe('light');
+
+    // Restore the original location object
+    window.location = originalLocation;
+  });
 });
