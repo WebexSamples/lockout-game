@@ -13,6 +13,7 @@ export const LobbyProvider = ({ lobbyId, initialUser, children }) => {
   const [lobby, setLobby] = useState(null);
   const [loading, setLoading] = useState(true);
   const [joined, setJoined] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
   const [user, setUser] = useState(() => {
     const cached = localStorage.getItem(`lobbyUser-${lobbyId}`);
     return cached ? JSON.parse(cached) : initialUser || null;
@@ -68,8 +69,24 @@ export const LobbyProvider = ({ lobbyId, initialUser, children }) => {
     const handleUpdate = (data) => {
       setLobby(data);
     };
+
+    const handleGameStart = () => {
+      setGameStarted(true);
+    };
+
+    const handleGameEnd = () => {
+      setGameStarted(false);
+    };
+
     socket.on(SOCKET_EVENTS.LOBBY_UPDATE, handleUpdate);
-    return () => socket.off(SOCKET_EVENTS.LOBBY_UPDATE, handleUpdate);
+    socket.on(SOCKET_EVENTS.LOBBY_START_GAME, handleGameStart);
+    socket.on(SOCKET_EVENTS.LOBBY_END_GAME, handleGameEnd);
+
+    return () => {
+      socket.off(SOCKET_EVENTS.LOBBY_UPDATE, handleUpdate);
+      socket.off(SOCKET_EVENTS.LOBBY_START_GAME, handleGameStart);
+      socket.off(SOCKET_EVENTS.LOBBY_END_GAME, handleGameEnd);
+    };
   }, [socket]);
 
   const joinLobby = useCallback(
@@ -159,9 +176,37 @@ export const LobbyProvider = ({ lobbyId, initialUser, children }) => {
     });
   }, [user, lobbyId, socket]);
 
+  const startGame = useCallback(() => {
+    if (!lobbyId) return;
+    socket.emit(SOCKET_EVENTS.LOBBY_START_GAME, {
+      lobby_id: lobbyId,
+    });
+  }, [lobbyId, socket]);
+
+  const forceStartGame = useCallback(() => {
+    if (!lobbyId || !user?.id) return;
+    socket.emit(SOCKET_EVENTS.LOBBY_FORCE_START, {
+      lobby_id: lobbyId,
+      user_id: user.id,
+    });
+  }, [lobbyId, socket, user]);
+
+  const endGame = useCallback(() => {
+    if (!lobbyId || !user?.id) return;
+    socket.emit(SOCKET_EVENTS.LOBBY_END_GAME, {
+      lobby_id: lobbyId,
+      user_id: user.id,
+    });
+  }, [lobbyId, socket, user]);
+
   const isUserTeamLead = useCallback(() => {
     const p = lobby?.participants?.find((p) => p.id === user?.id);
     return p?.is_team_lead || false;
+  }, [lobby, user]);
+
+  const isUserHost = useCallback(() => {
+    const p = lobby?.participants?.find((p) => p.id === user?.id);
+    return p?.is_host || false;
   }, [lobby, user]);
 
   const contextValue = useMemo(
@@ -170,6 +215,7 @@ export const LobbyProvider = ({ lobbyId, initialUser, children }) => {
       lobbyUrl,
       loading,
       joined,
+      gameStarted,
       joinLobby,
       leaveLobby,
       toggleReady,
@@ -178,16 +224,22 @@ export const LobbyProvider = ({ lobbyId, initialUser, children }) => {
       requestTeamLead,
       demoteTeamLead,
       isUserTeamLead,
+      isUserHost,
       hasTeamLead,
+      startGame,
+      forceStartGame,
+      endGame,
       user,
       setUser,
-      getCurrentTeam, // Expose the getCurrentTeam function in context
+      getCurrentTeam,
+      socket, // Expose socket to allow components to emit events directly
     }),
     [
       lobby,
       lobbyUrl,
       loading,
       joined,
+      gameStarted,
       joinLobby,
       leaveLobby,
       toggleReady,
@@ -196,10 +248,15 @@ export const LobbyProvider = ({ lobbyId, initialUser, children }) => {
       requestTeamLead,
       demoteTeamLead,
       isUserTeamLead,
+      isUserHost,
       hasTeamLead,
+      startGame,
+      forceStartGame,
+      endGame,
       user,
       setUser,
       getCurrentTeam,
+      socket,
     ],
   );
 

@@ -14,6 +14,7 @@ LOBBY_DEMOTE_TEAM_LEAD = "lobby:demote_team_lead"
 LOBBY_START_GAME = "lobby:start_game"
 LOBBY_FORCE_START = "lobby:force_start"
 LOBBY_CHANGE_TEAM = "lobby:change_team"
+LOBBY_END_GAME = "lobby:end_game"
 
 
 # Team constants

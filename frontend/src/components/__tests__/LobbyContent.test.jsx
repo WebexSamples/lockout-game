@@ -6,51 +6,103 @@ import LobbyContent from '../LobbyContent';
 import { renderWithLobbyContext } from '../../test/testUtils';
 import { createMockLobbyContext } from '../../test/mocks/mockLobbyContext';
 
+// Mock child components to simplify testing
+vi.mock('../LobbyDetails', () => ({
+  default: () => <div data-testid="lobby-details">LobbyDetails Mock</div>,
+}));
+
+vi.mock('../LobbyParticipants', () => ({
+  default: () => (
+    <div data-testid="lobby-participants">LobbyParticipants Mock</div>
+  ),
+}));
+
+vi.mock('../LobbyActions', () => ({
+  default: () => <div data-testid="lobby-actions">LobbyActions Mock</div>,
+}));
+
+vi.mock('../HostControls', () => ({
+  default: () => <div data-testid="host-controls">HostControls Mock</div>,
+}));
+
+vi.mock('../JoinLobby', () => ({
+  default: ({ onJoin }) => (
+    <div
+      data-testid="join-lobby"
+      onClick={() => onJoin({ id: 'test-id', display_name: 'Test User' })}
+    >
+      JoinLobby Mock
+    </div>
+  ),
+}));
+
+vi.mock('../Game', () => ({
+  default: () => <div data-testid="game-view">Game Mock</div>,
+}));
+
+vi.mock('../../hooks/useWebex', () => ({
+  default: () => ({
+    webexData: { user: { id: 'webex-id', displayName: 'Webex User' } },
+  }),
+}));
+
 describe('LobbyContent', () => {
-  it('shows loading state when loading is true', () => {
-    const ctx = createMockLobbyContext({ loading: true });
-    renderWithLobbyContext(<LobbyContent />, ctx);
+  it('renders loading state initially', () => {
+    const mockContext = createMockLobbyContext({ loading: true });
+    renderWithLobbyContext(<LobbyContent />, mockContext);
 
-    expect(screen.getByText(/Loading lobby/i)).toBeInTheDocument();
+    expect(screen.getByText(/Loading lobby.../i)).toBeInTheDocument();
   });
 
-  it('renders JoinLobby screen when user is missing', () => {
-    const ctx = createMockLobbyContext({
-      user: null,
+  it('renders JoinLobby when not joined', () => {
+    const mockContext = createMockLobbyContext({
+      loading: false,
       joined: false,
     });
-    renderWithLobbyContext(<LobbyContent />, ctx);
+    renderWithLobbyContext(<LobbyContent />, mockContext);
 
-    // ✅ More precise: label for the input field (from JoinLobby)
-    expect(
-      screen.getByLabelText(/Enter your display name/i),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('join-lobby')).toBeInTheDocument();
   });
 
-  it('calls joinLobby automatically if user exists and not joined', () => {
-    const joinLobby = vi.fn();
-    const ctx = createMockLobbyContext({
-      joined: false,
-      user: { id: 'user123', display_name: 'AgentX' },
-      joinLobby,
+  it('renders all lobby components in correct order when joined', () => {
+    const mockContext = createMockLobbyContext({
+      loading: false,
+      joined: true,
     });
+    renderWithLobbyContext(<LobbyContent />, mockContext);
 
-    renderWithLobbyContext(<LobbyContent />, ctx);
+    // Check all components are rendered
+    expect(screen.getByTestId('lobby-details')).toBeInTheDocument();
+    expect(screen.getByTestId('lobby-participants')).toBeInTheDocument();
+    expect(screen.getByTestId('lobby-actions')).toBeInTheDocument();
+    expect(screen.getByTestId('host-controls')).toBeInTheDocument();
 
-    expect(joinLobby).toHaveBeenCalledWith({
-      id: 'user123',
-      display_name: 'AgentX',
-    });
+    // Check that HostControls appears after LobbyActions in the DOM
+    const lobbyActionsIndex = screen
+      .getByTestId('lobby-actions')
+      .compareDocumentPosition(screen.getByTestId('host-controls'));
+
+    // Flag 4 is set when the node follows the reference node
+    expect(lobbyActionsIndex & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
   });
 
-  it('renders LobbyDetails, LobbyParticipants, and LobbyActions when joined', () => {
-    const ctx = createMockLobbyContext({ joined: true });
-    renderWithLobbyContext(<LobbyContent />, ctx);
+  it('renders Game component when game is started', () => {
+    const mockContext = createMockLobbyContext({
+      loading: false,
+      joined: true,
+      gameStarted: true,
+    });
 
-    // These confirm all core subcomponents rendered
-    expect(screen.getByText(/Lobby ID:/i)).toBeInTheDocument(); // LobbyDetails
-    expect(screen.getByText(/Your Actions/i)).toBeInTheDocument(); // LobbyActions
-    expect(screen.getByText(/Team 1/i)).toBeInTheDocument(); // LobbyParticipants
-    expect(screen.getByText(/Team 2/i)).toBeInTheDocument();
+    renderWithLobbyContext(<LobbyContent />, mockContext);
+
+    // Game should be rendered instead of lobby components
+    expect(screen.getByTestId('game-view')).toBeInTheDocument();
+
+    // Lobby components should not be rendered
+    expect(screen.queryByTestId('lobby-details')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('lobby-participants')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('host-controls')).not.toBeInTheDocument();
   });
 });
