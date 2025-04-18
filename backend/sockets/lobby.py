@@ -17,6 +17,7 @@ from ..constants import (
     LOBBY_UPDATE,
     LOBBY_UPDATE_DISPLAY_NAME,
     LOBBY_CHANGE_TEAM,
+    LOBBY_END_GAME,
     TEAM1,
     TEAM2,
 )
@@ -190,13 +191,58 @@ def register_lobby_socket_handlers(socketio):
     @socketio.on(LOBBY_FORCE_START)
     def handle_force_start_game(data):
         lobby_id = data.get("lobby_id")
+        user_id = data.get("user_id", None)
         lobby = get_lobbies().get(lobby_id)
 
-        if not lobby or not _all_ready(lobby["participants"]):
-            emit(LOBBY_ERROR, {"message": "All players must be ready to force start"})
+        if not lobby:
+            emit(LOBBY_ERROR, {"message": "Lobby not found"})
             return
 
+        # Check if user is the host (only hosts can force start)
+        is_host = False
+        if user_id:
+            for p in lobby["participants"]:
+                if p["id"] == user_id and p[FIELD_IS_HOST]:
+                    is_host = True
+                    break
+
+            if not is_host:
+                emit(LOBBY_ERROR, {"message": "Only the host can force start the game"})
+                return
+
+        # No other checks - the host can force start anytime
         emit(LOBBY_START_GAME, {}, room=lobby_id)
+
+    @socketio.on(LOBBY_END_GAME)
+    def handle_end_game(data):
+        lobby_id = data.get("lobby_id")
+        user_id = data.get("user_id")
+        lobby = get_lobbies().get(lobby_id)
+
+        if not lobby:
+            emit(LOBBY_ERROR, {"message": "Lobby not found"})
+            return
+
+        # Check if user is the host (only hosts can end games)
+        is_host = False
+        for p in lobby["participants"]:
+            if p["id"] == user_id and p[FIELD_IS_HOST]:
+                is_host = True
+                break
+
+        if not is_host:
+            emit(LOBBY_ERROR, {"message": "Only the host can end the game"})
+            return
+
+        # Reset all players' ready status to false
+        for p in lobby["participants"]:
+            p["ready"] = False
+
+        # Broadcast end game event to all clients in the lobby
+        emit(LOBBY_END_GAME, {}, room=lobby_id)
+        
+        # Also send a lobby update to refresh player states
+        emit(LOBBY_UPDATE, lobby, room=lobby_id)
 
     def _can_start_game(lobby):
         p = lobby["participants"]
