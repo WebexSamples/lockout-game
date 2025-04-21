@@ -42,7 +42,7 @@ const CreateLobby = () => {
     try {
       const hostId = uuidv4();
       const data = await api.createLobby(hostId, displayName, lobbyName);
-      navigate(ROUTES.LOBBY_WITH_ID(data.lobby_id), {
+      navigate(ROUTES.GAME_WITH_ID(data.lobby_id), {
         state: { user: { id: hostId, display_name: displayName } },
       });
     } catch (error) {

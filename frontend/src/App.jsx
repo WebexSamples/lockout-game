@@ -46,8 +46,8 @@ function App() {
       <Container>
         <Routes>
           <Route path={ROUTES.HOME} element={<LandingPage />} />
-          <Route path={ROUTES.LOBBY} element={<CreateLobby />} />
-          <Route path={ROUTES.LOBBY_WITH_ID(':lobbyId')} element={<Lobby />} />
+          <Route path={ROUTES.GAME} element={<CreateLobby />} />
+          <Route path={ROUTES.GAME_WITH_ID(':lobbyId')} element={<Lobby />} />
           <Route path="*" element={<LandingPage />} />
         </Routes>
       </Container>

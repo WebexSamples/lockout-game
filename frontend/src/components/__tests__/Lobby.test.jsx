@@ -20,7 +20,7 @@ describe('Lobby', () => {
     const lobbyId = 'abc123';
     const initialUser = { id: 'user1', display_name: 'TestUser' };
 
-    renderWithRouter(<Lobby />, `/lobby/${lobbyId}`, { user: initialUser });
+    renderWithRouter(<Lobby />, `/game/${lobbyId}`, { user: initialUser });
 
     expect(screen.getByTestId('mock-lobby-content')).toBeInTheDocument();
   });
@@ -28,7 +28,7 @@ describe('Lobby', () => {
   it('renders LobbyContent inside LobbyProvider with null initialUser fallback', () => {
     const lobbyId = 'abc456';
 
-    renderWithRouter(<Lobby />, `/lobby/${lobbyId}`);
+    renderWithRouter(<Lobby />, `/game/${lobbyId}`);
 
     expect(screen.getByTestId('mock-lobby-content')).toBeInTheDocument();
   });

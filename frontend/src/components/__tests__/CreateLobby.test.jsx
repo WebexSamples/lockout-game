@@ -36,7 +36,7 @@ describe('CreateLobby', () => {
     await waitFor(() => {
       expect(globalThis.mockCreateLobby).toHaveBeenCalled();
       expect(globalThis.mockNavigate).toHaveBeenCalledWith(
-        `/lobby/${mockLobbyId}`,
+        `/game/${mockLobbyId}`,
         expect.anything(),
       );
     });

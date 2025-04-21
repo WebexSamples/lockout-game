@@ -25,7 +25,7 @@ export const LobbyProvider = ({ lobbyId, initialUser, children }) => {
   );
 
   const lobbyUrl = useMemo(
-    () => `${window.location.origin}${ROUTES.LOBBY_WITH_ID(lobbyId)}`,
+    () => `${window.location.origin}${ROUTES.GAME_WITH_ID(lobbyId)}`,
     [lobbyId],
   );
 
