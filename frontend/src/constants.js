@@ -28,6 +28,6 @@ export const TEAM_LABELS = {
 // Route constants
 export const ROUTES = {
   HOME: '/',
-  LOBBY: '/lobby',
-  LOBBY_WITH_ID: (lobbyId) => `/lobby/${lobbyId}`,
+  GAME: '/game',
+  GAME_WITH_ID: (lobbyId) => `/game/${lobbyId}`,
 };

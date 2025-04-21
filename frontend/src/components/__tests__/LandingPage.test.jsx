@@ -28,10 +28,10 @@ describe('LandingPage', () => {
     expect(button).toBeInTheDocument();
   });
 
-  it('calls navigate("/lobby") on button click', () => {
+  it('calls navigate("/game") on button click', () => {
     const button = screen.getByRole('button', { name: /create a game/i });
     fireEvent.click(button);
 
-    expect(globalThis.mockNavigate).toHaveBeenCalledWith('/lobby');
+    expect(globalThis.mockNavigate).toHaveBeenCalledWith('/game');
   });
 });

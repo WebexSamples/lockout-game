@@ -67,7 +67,7 @@ def create_lobby():
         "participants": [participant],
     }
 
-    lobby_url = f"{Config.FRONTEND_URL}/lobby/{lobby_id}"
+    lobby_url = f"{Config.FRONTEND_URL}/game/{lobby_id}"
 
     return (
         jsonify(

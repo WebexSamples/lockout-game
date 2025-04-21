@@ -46,7 +46,7 @@ const LandingPage = () => {
             variant="contained"
             color="primary"
             size="large"
-            onClick={() => navigate(ROUTES.LOBBY)}
+            onClick={() => navigate(ROUTES.GAME)}
             sx={{
               boxShadow: '0 0 10px #00ff00',
               '&:hover': {
