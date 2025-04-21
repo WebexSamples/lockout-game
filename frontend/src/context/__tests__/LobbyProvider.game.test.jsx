@@ -56,20 +56,22 @@ describe('LobbyProvider Game Events', () => {
       );
     };
 
-    render(
-      <LobbyProvider
-        lobbyId="test-id"
-        initialUser={{ id: 'user1', display_name: 'Test User' }}
-      >
-        <TestConsumer />
-      </LobbyProvider>,
-    );
+    await act(async () => {
+      render(
+        <LobbyProvider
+          lobbyId="test-id"
+          initialUser={{ id: 'user1', display_name: 'Test User' }}
+        >
+          <TestConsumer />
+        </LobbyProvider>,
+      );
+    });
 
     // Initial state should be not started
     expect(screen.getByTestId('game-status')).toHaveTextContent('Not Started');
 
     // Simulate receiving game start event
-    act(() => {
+    await act(async () => {
       if (mockSocketEvents[SOCKET_EVENTS.LOBBY_START_GAME]) {
         mockSocketEvents[SOCKET_EVENTS.LOBBY_START_GAME]();
       }
@@ -93,17 +95,19 @@ describe('LobbyProvider Game Events', () => {
     };
 
     // Set up provider with game already started
-    render(
-      <LobbyProvider
-        lobbyId="test-id"
-        initialUser={{ id: 'user1', display_name: 'Test User' }}
-      >
-        <TestConsumer />
-      </LobbyProvider>,
-    );
+    await act(async () => {
+      render(
+        <LobbyProvider
+          lobbyId="test-id"
+          initialUser={{ id: 'user1', display_name: 'Test User' }}
+        >
+          <TestConsumer />
+        </LobbyProvider>,
+      );
+    });
 
     // Set the initial state to game started
-    act(() => {
+    await act(async () => {
       if (mockSocketEvents[SOCKET_EVENTS.LOBBY_START_GAME]) {
         mockSocketEvents[SOCKET_EVENTS.LOBBY_START_GAME]();
       }
@@ -113,7 +117,7 @@ describe('LobbyProvider Game Events', () => {
     expect(screen.getByTestId('game-status')).toHaveTextContent('Game Started');
 
     // Simulate receiving game end event
-    act(() => {
+    await act(async () => {
       if (mockSocketEvents[SOCKET_EVENTS.LOBBY_END_GAME]) {
         mockSocketEvents[SOCKET_EVENTS.LOBBY_END_GAME]();
       }
@@ -135,17 +139,21 @@ describe('LobbyProvider Game Events', () => {
       );
     };
 
-    render(
-      <LobbyProvider
-        lobbyId="test-lobby"
-        initialUser={{ id: 'user1', display_name: 'Test User' }}
-      >
-        <TestConsumer />
-      </LobbyProvider>,
-    );
+    await act(async () => {
+      render(
+        <LobbyProvider
+          lobbyId="test-lobby"
+          initialUser={{ id: 'user1', display_name: 'Test User' }}
+        >
+          <TestConsumer />
+        </LobbyProvider>,
+      );
+    });
 
     // Click start button
-    fireEvent.click(screen.getByTestId('start-button'));
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('start-button'));
+    });
 
     // Check that socket.emit was called with correct event and data
     expect(mockSocketEmit).toHaveBeenCalledWith(
@@ -169,17 +177,21 @@ describe('LobbyProvider Game Events', () => {
       );
     };
 
-    render(
-      <LobbyProvider
-        lobbyId="test-lobby"
-        initialUser={{ id: 'user1', display_name: 'Test User' }}
-      >
-        <TestConsumer />
-      </LobbyProvider>,
-    );
+    await act(async () => {
+      render(
+        <LobbyProvider
+          lobbyId="test-lobby"
+          initialUser={{ id: 'user1', display_name: 'Test User' }}
+        >
+          <TestConsumer />
+        </LobbyProvider>,
+      );
+    });
 
     // Click force start button
-    fireEvent.click(screen.getByTestId('force-start-button'));
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('force-start-button'));
+    });
 
     // Check that socket.emit was called with correct event and data
     expect(mockSocketEmit).toHaveBeenCalledWith(
@@ -203,17 +215,21 @@ describe('LobbyProvider Game Events', () => {
       );
     };
 
-    render(
-      <LobbyProvider
-        lobbyId="test-lobby"
-        initialUser={{ id: 'user1', display_name: 'Test User' }}
-      >
-        <TestConsumer />
-      </LobbyProvider>,
-    );
+    await act(async () => {
+      render(
+        <LobbyProvider
+          lobbyId="test-lobby"
+          initialUser={{ id: 'user1', display_name: 'Test User' }}
+        >
+          <TestConsumer />
+        </LobbyProvider>,
+      );
+    });
 
     // Click end button
-    fireEvent.click(screen.getByTestId('end-button'));
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('end-button'));
+    });
 
     // Check that socket.emit was called with correct event and data
     expect(mockSocketEmit).toHaveBeenCalledWith(SOCKET_EVENTS.LOBBY_END_GAME, {
