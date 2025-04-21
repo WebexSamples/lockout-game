@@ -30,6 +30,12 @@ lobby_bp = Blueprint("lobby_bp", __name__)
 #     ]
 #   }
 # }
+# When retrieved via API, the lobby also includes:
+# {
+#   'id': str,  # The lobby_id is included in the response
+#   'host': str,
+#   // ...other fields as above
+# }
 lobbies = {}
 
 
@@ -87,4 +93,6 @@ def get_lobby(lobby_id):
     lobby = lobbies.get(lobby_id)
     if not lobby:
         return jsonify({"error": "Lobby not found"}), 404
-    return jsonify(lobby), 200
+    # Return lobby data with the ID included
+    response_data = {**lobby, "id": lobby_id}
+    return jsonify(response_data), 200

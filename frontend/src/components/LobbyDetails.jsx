@@ -18,7 +18,7 @@ const LobbyDetails = () => {
           🔒 {lobby?.lobby_name || 'Game Lobby'}
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          Game ID: {lobby?.lobbyId}
+          Game ID: {lobby?.id}
         </Typography>
         <Typography variant="body2">
           Game URL:{' '}
