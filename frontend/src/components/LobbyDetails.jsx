@@ -5,7 +5,7 @@ import useWebex from '../hooks/useWebex';
 import { useLobbyContext } from '../context/useLobbyContext';
 
 /**
- * Displays key lobby information and Webex sharing controls.
+ * Displays key game lobby information and Webex sharing controls.
  */
 const LobbyDetails = () => {
   const { isShared, isRunningInWebex, toggleShare } = useWebex();
@@ -15,13 +15,13 @@ const LobbyDetails = () => {
     <Card sx={{ mb: 3 }}>
       <CardContent>
         <Typography variant="h5" fontWeight="bold">
-          {lobby?.lobby_name || 'Lobby'}
+          🔒 {lobby?.lobby_name || 'Game Lobby'}
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          Lobby ID: {lobby?.lobbyId}
+          Game ID: {lobby?.lobbyId}
         </Typography>
         <Typography variant="body2">
-          Lobby URL:{' '}
+          Game URL:{' '}
           <Link href={lobbyUrl} target="_blank" rel="noopener noreferrer">
             {lobbyUrl}
           </Link>

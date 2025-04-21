@@ -29,7 +29,7 @@ describe('LobbyDetails', () => {
     renderWithLobbyContext(<LobbyDetails />, baseContext);
 
     expect(screen.getByText(/Mock Lobby Name/i)).toBeInTheDocument();
-    expect(screen.getByText(/Lobby ID:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Game ID:/i)).toBeInTheDocument();
     expect(screen.getByRole('link')).toHaveAttribute(
       'href',
       baseContext.lobbyUrl,
