@@ -15,7 +15,9 @@ describe('Navbar', () => {
 
   it('renders app title and dark mode toggle', () => {
     renderWithRouter(<Navbar darkMode={false} setDarkMode={mockToggleDark} />);
-    expect(screen.getByText(/Webex Launchpad/i)).toBeInTheDocument();
+
+    // Updated to look for LOCKOUT instead of Webex Launchpad
+    expect(screen.getByText(/LOCKOUT/i)).toBeInTheDocument();
 
     const toggleButton = screen.getByRole('button', {
       name: /Toggle Dark Mode/i,

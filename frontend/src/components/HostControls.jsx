@@ -17,10 +17,12 @@ import {
   ListItemIcon,
   ListItemText,
   Tooltip,
+  Box,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import SecurityIcon from '@mui/icons-material/Security';
+import CodeIcon from '@mui/icons-material/Code';
 import { useLobbyContext } from '../context/useLobbyContext';
 import { TEAMS } from '../constants';
 
@@ -80,11 +82,11 @@ const HostControls = () => {
     }
 
     if (!team1HasLead) {
-      warnings.push("Team 1 doesn't have a team lead");
+      warnings.push("Team 1 doesn't have a Hacker");
     }
 
     if (!team2HasLead) {
-      warnings.push("Team 2 doesn't have a team lead");
+      warnings.push("Team 2 doesn't have a Hacker");
     }
 
     if (team1Players.length !== team2Players.length) {
@@ -109,20 +111,30 @@ const HostControls = () => {
   };
 
   return (
-    <Card sx={{ mt: 2 }}>
+    <Card
+      sx={{
+        mt: 2,
+        border: '1px solid',
+        borderColor: 'primary.main',
+        backgroundColor: 'background.paper',
+      }}
+    >
       <CardContent sx={{ pb: '16px !important' }}>
         <Grid container spacing={1} alignItems="center">
           <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-            <AdminPanelSettingsIcon sx={{ mr: 1 }} color="primary" />
+            <SecurityIcon sx={{ mr: 1 }} color="primary" />
             <Typography variant="subtitle1" component="span">
-              Host Controls
+              Security Controls
             </Typography>
           </Grid>
 
           <Grid item xs>
             <Grid container spacing={1} justifyContent="center">
               <Grid item>
-                <Tooltip title="Each team should have at least 2 players to ensure a balanced and engaging game. This is recommended but not required.">
+                <Tooltip
+                  title="Each team should have at least 2 players to ensure a balanced and engaging game. This is recommended but not required."
+                  arrow
+                >
                   <Chip
                     icon={
                       team1HasEnoughPlayers ? (
@@ -139,7 +151,10 @@ const HostControls = () => {
                 </Tooltip>
               </Grid>
               <Grid item>
-                <Tooltip title="Each team should have at least 2 players to ensure a balanced and engaging game. This is recommended but not required.">
+                <Tooltip
+                  title="Each team should have at least 2 players to ensure a balanced and engaging game. This is recommended but not required."
+                  arrow
+                >
                   <Chip
                     icon={
                       team2HasEnoughPlayers ? (
@@ -156,29 +171,48 @@ const HostControls = () => {
                 </Tooltip>
               </Grid>
               <Grid item>
-                <Tooltip title="Each team needs a Team Lead (Hacker) who will provide encrypted clues to their teammates. This is recommended but not required.">
+                <Tooltip
+                  title="Each team needs a Hacker who will provide encrypted clues to their AI Agent teammates. This is required for optimal gameplay."
+                  arrow
+                >
                   <Chip
                     icon={team1HasLead ? <CheckCircleIcon /> : <ErrorIcon />}
                     color={team1HasLead ? 'success' : 'error'}
                     size="small"
-                    label="Team 1 Lead"
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <CodeIcon sx={{ fontSize: '0.875rem', mr: 0.5 }} />
+                        Team 1 Hacker
+                      </Box>
+                    }
                     variant="outlined"
                   />
                 </Tooltip>
               </Grid>
               <Grid item>
-                <Tooltip title="Each team needs a Team Lead (Hacker) who will provide encrypted clues to their teammates. This is recommended but not required.">
+                <Tooltip
+                  title="Each team needs a Hacker who will provide encrypted clues to their AI Agent teammates. This is required for optimal gameplay."
+                  arrow
+                >
                   <Chip
                     icon={team2HasLead ? <CheckCircleIcon /> : <ErrorIcon />}
                     color={team2HasLead ? 'success' : 'error'}
                     size="small"
-                    label="Team 2 Lead"
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <CodeIcon sx={{ fontSize: '0.875rem', mr: 0.5 }} />
+                        Team 2 Hacker
+                      </Box>
+                    }
                     variant="outlined"
                   />
                 </Tooltip>
               </Grid>
               <Grid item>
-                <Tooltip title="Players should be ready before starting the game, but the host can force start regardless.">
+                <Tooltip
+                  title="Players should be ready before starting the game, but the Security Admin can force start regardless."
+                  arrow
+                >
                   <Chip
                     icon={allPlayersReady ? <CheckCircleIcon /> : <ErrorIcon />}
                     color={allPlayersReady ? 'success' : 'warning'}
@@ -199,8 +233,14 @@ const HostControls = () => {
                   color="primary"
                   onClick={startGame}
                   size="small"
+                  sx={{
+                    boxShadow: '0 0 5px #00ff00',
+                    '&:hover': {
+                      boxShadow: '0 0 10px #00ff00',
+                    },
+                  }}
                 >
-                  Start Game
+                  Launch Operation
                 </Button>
               ) : (
                 <Button
@@ -208,8 +248,14 @@ const HostControls = () => {
                   color="warning"
                   onClick={handleStartClick}
                   size="small"
+                  sx={{
+                    boxShadow: '0 0 5px #ff9800',
+                    '&:hover': {
+                      boxShadow: '0 0 10px #ff9800',
+                    },
+                  }}
                 >
-                  Force Start
+                  Override Protocols
                 </Button>
               )}
             </Grid>
@@ -221,11 +267,19 @@ const HostControls = () => {
       <Dialog
         open={confirmDialogOpen}
         onClose={() => setConfirmDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            border: '1px solid',
+            borderColor: 'warning.main',
+            backgroundColor: 'background.paper',
+          },
+        }}
       >
-        <DialogTitle>Force Start Game?</DialogTitle>
+        <DialogTitle>Override Security Protocols?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to start the game with the following issues?
+            Warning: Attempting to access secure system with the following
+            security vulnerabilities:
           </DialogContentText>
           <List dense>
             {warningMessages.map((warning, index) => (
@@ -246,7 +300,7 @@ const HostControls = () => {
             color="warning"
             autoFocus
           >
-            Force Start Anyway
+            Execute Override
           </Button>
         </DialogActions>
       </Dialog>

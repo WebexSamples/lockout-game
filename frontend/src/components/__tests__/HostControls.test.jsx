@@ -30,12 +30,12 @@ describe('HostControls', () => {
       // All chips should be visible even for non-hosts
       expect(screen.getByText('Team 1: 2+ players')).toBeInTheDocument();
       expect(screen.getByText('Team 2: 2+ players')).toBeInTheDocument();
-      expect(screen.getByText('Team 1 Lead')).toBeInTheDocument();
-      expect(screen.getByText('Team 2 Lead')).toBeInTheDocument();
+      expect(screen.getByText('Team 1 Hacker')).toBeInTheDocument();
+      expect(screen.getByText('Team 2 Hacker')).toBeInTheDocument();
       expect(screen.getByText('All Ready')).toBeInTheDocument();
     });
 
-    it('shows start game button only for hosts', () => {
+    it('shows security controls button only for hosts', () => {
       // Create a mock with a host user
       const hostContext = createMockLobbyContext({
         isUserHost: vi.fn().mockReturnValue(true),
@@ -55,11 +55,11 @@ describe('HostControls', () => {
 
       // Host should see the start button
       expect(
-        screen.getByRole('button', { name: /Force Start/i }),
+        screen.getByRole('button', { name: /Override Protocols/i }),
       ).toBeInTheDocument();
     });
 
-    it('hides start game button for non-hosts', () => {
+    it('hides security controls button for non-hosts', () => {
       // Create a mock with a non-host user
       const nonHostContext = createMockLobbyContext({
         isUserHost: vi.fn().mockReturnValue(false),
@@ -79,7 +79,9 @@ describe('HostControls', () => {
 
       // Non-host should not see the start button
       expect(
-        screen.queryByRole('button', { name: /Start Game|Force Start/i }),
+        screen.queryByRole('button', {
+          name: /Launch Operation|Override Protocols/i,
+        }),
       ).not.toBeInTheDocument();
     });
   });
@@ -127,9 +129,9 @@ describe('HostControls', () => {
       const successIcons = screen.getAllByTestId('CheckCircleIcon');
       expect(successIcons.length).toBe(5);
 
-      // Button should say "Start Game" not "Force Start"
+      // Button should say "Launch Operation" not "Override Protocols"
       expect(
-        screen.getByRole('button', { name: /Start Game/i }),
+        screen.getByRole('button', { name: /Launch Operation/i }),
       ).toBeInTheDocument();
     });
 
@@ -161,9 +163,9 @@ describe('HostControls', () => {
       const errorIcons = screen.getAllByTestId('ErrorIcon');
       expect(errorIcons.length).toBeGreaterThan(0);
 
-      // Button should say "Force Start" not "Start Game"
+      // Button should say "Override Protocols" not "Launch Operation"
       expect(
-        screen.getByRole('button', { name: /Force Start/i }),
+        screen.getByRole('button', { name: /Override Protocols/i }),
       ).toBeInTheDocument();
     });
   });
@@ -212,14 +214,16 @@ describe('HostControls', () => {
 
       renderWithLobbyContext(<HostControls />, mockContext);
 
-      const startButton = screen.getByRole('button', { name: /Start Game/i });
+      const startButton = screen.getByRole('button', {
+        name: /Launch Operation/i,
+      });
       fireEvent.click(startButton);
 
       expect(startGame).toHaveBeenCalled();
       expect(forceStartGame).not.toHaveBeenCalled();
     });
 
-    it('shows confirmation dialog when using Force Start', async () => {
+    it('shows confirmation dialog when using Override Protocols', async () => {
       const startGame = vi.fn();
       const forceStartGame = vi.fn();
 
@@ -249,16 +253,14 @@ describe('HostControls', () => {
       renderWithLobbyContext(<HostControls />, mockContext);
 
       const forceStartButton = screen.getByRole('button', {
-        name: /Force Start/i,
+        name: /Override Protocols/i,
       });
       fireEvent.click(forceStartButton);
 
       // Dialog should appear
       expect(screen.getByRole('dialog')).toBeInTheDocument();
       expect(
-        screen.getByText(
-          /Are you sure you want to start the game with the following issues/i,
-        ),
+        screen.getByText(/Override Security Protocols/i),
       ).toBeInTheDocument();
 
       // Dialog should list issues
@@ -274,7 +276,7 @@ describe('HostControls', () => {
 
       // Confirm force start
       const confirmButton = screen.getByRole('button', {
-        name: /Force Start Anyway/i,
+        name: /Execute Override/i,
       });
       fireEvent.click(confirmButton);
 
@@ -312,7 +314,7 @@ describe('HostControls', () => {
       renderWithLobbyContext(<HostControls />, mockContext);
 
       const forceStartButton = screen.getByRole('button', {
-        name: /Force Start/i,
+        name: /Override Protocols/i,
       });
       fireEvent.click(forceStartButton);
 

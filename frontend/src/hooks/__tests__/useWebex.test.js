@@ -86,7 +86,7 @@ describe('useWebex (real hook, mocked SDK)', () => {
     expect(result.current.isRunningInWebex).toBe(false);
     expect(result.current.username).toBe('Unknown User (Webex Disabled)');
     expect(result.current.meetingName).toBe('No Active Meeting');
-    expect(result.current.theme).toBe('light');
+    expect(result.current.theme).toBe('dark'); // Updated to expect dark theme
 
     // Restore the original location object
     window.location = originalLocation;

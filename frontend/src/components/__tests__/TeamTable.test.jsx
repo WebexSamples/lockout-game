@@ -200,7 +200,7 @@ describe('TeamTable', () => {
       expect(screen.getByText(/Charlie/)).toBeInTheDocument();
     });
 
-    it('shows team lead and host badges', () => {
+    it('shows hacker and host badges', () => {
       const context = createMockLobbyContext();
 
       const participants = [
@@ -232,13 +232,13 @@ describe('TeamTable', () => {
         context,
       );
 
-      expect(screen.getAllByLabelText(/Team Lead/i)).toHaveLength(1);
+      expect(screen.getAllByLabelText(/Hacker/i)).toHaveLength(1);
       expect(screen.getAllByLabelText(/Host/i)).toHaveLength(1);
     });
   });
 
-  describe('Team Lead Actions', () => {
-    it('shows Become Team Lead button when user is on the team but not a team lead', () => {
+  describe('Hacker Role Actions', () => {
+    it('shows Become Hacker button when user is on the team but not a hacker', () => {
       const currentUser = { id: 'user-1', display_name: 'Alice' };
       const mockContext = createMockLobbyContext({
         user: currentUser,
@@ -267,14 +267,15 @@ describe('TeamTable', () => {
         mockContext,
       );
 
-      const button = screen.getByRole('button', { name: /Become Team Lead/i });
+      // Look for the text directly instead of by role/name
+      const button = screen.getByText('Become Hacker');
       expect(button).toBeInTheDocument();
 
       fireEvent.click(button);
       expect(mockContext.requestTeamLead).toHaveBeenCalled();
     });
 
-    it('shows Step Down button when user is on the team and is a team lead', () => {
+    it('shows Become AI Agent button when user is on the team and is a hacker', () => {
       const currentUser = { id: 'user-1', display_name: 'Alice' };
       const mockContext = createMockLobbyContext({
         user: currentUser,
@@ -302,14 +303,15 @@ describe('TeamTable', () => {
         mockContext,
       );
 
-      const button = screen.getByRole('button', { name: /Step Down/i });
+      // Look for the text directly instead of by role/name
+      const button = screen.getByText('Become AI Agent');
       expect(button).toBeInTheDocument();
 
       fireEvent.click(button);
       expect(mockContext.demoteTeamLead).toHaveBeenCalled();
     });
 
-    it('does not show Step Down button when user is not on the team', () => {
+    it('does not show Become AI Agent button when user is not on the team', () => {
       const currentUser = { id: 'user-1', display_name: 'Alice' };
       const mockContext = createMockLobbyContext({
         user: currentUser,
@@ -338,7 +340,7 @@ describe('TeamTable', () => {
       );
 
       const stepDownButton = screen.queryByRole('button', {
-        name: /Step Down/i,
+        name: /Become AI Agent/i,
       });
       expect(stepDownButton).not.toBeInTheDocument();
 
