@@ -25,7 +25,7 @@ const useWebex = () => {
   const [isShared, setIsShared] = useState(false);
   const [username, setUsername] = useState(null);
   const [meetingName, setMeetingName] = useState(null);
-  const [theme, setTheme] = useState('light'); // Default to light theme
+  const [theme, setTheme] = useState('dark'); // Default to dark theme for hacker aesthetic
 
   // Check for query parameter to disable Webex
   const isWebexDisabled =
@@ -39,7 +39,7 @@ const useWebex = () => {
         setLoading(false);
         setUsername('Unknown User (Webex Disabled)');
         setMeetingName('No Active Meeting');
-        setTheme('light');
+        setTheme('dark'); // Default to dark theme even when Webex is disabled
         return;
       }
 
@@ -52,7 +52,7 @@ const useWebex = () => {
           setLoading(false);
           setUsername('Unknown User');
           setMeetingName('No Active Meeting');
-          setTheme('light'); // Default theme
+          setTheme('dark'); // Default to dark theme if timeout occurs
         }, 5000);
 
         await app.onReady(); // Completes only if inside Webex

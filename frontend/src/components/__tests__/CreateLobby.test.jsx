@@ -12,15 +12,15 @@ describe('CreateLobby', () => {
   });
 
   it('renders form fields and create button', () => {
-    expect(screen.getByLabelText(/Lobby Name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Game Name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Your Display Name/i)).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /Create Lobby/i }),
+      screen.getByRole('button', { name: /Create Game/i }),
     ).toBeInTheDocument();
   });
 
   it('pre-fills inputs from Webex SDK', () => {
-    expect(screen.getByLabelText(/Lobby Name/i)).toHaveValue('Test Meeting');
+    expect(screen.getByLabelText(/Game Name/i)).toHaveValue('Test Meeting');
     expect(screen.getByLabelText(/Your Display Name/i)).toHaveValue('TestUser');
   });
 
@@ -30,7 +30,7 @@ describe('CreateLobby', () => {
       lobby_id: mockLobbyId,
     });
 
-    const button = screen.getByRole('button', { name: /Create Lobby/i });
+    const button = screen.getByRole('button', { name: /Create Game/i });
     fireEvent.click(button);
 
     await waitFor(() => {
@@ -43,14 +43,14 @@ describe('CreateLobby', () => {
   });
 
   it('does not call api if inputs are empty', async () => {
-    fireEvent.change(screen.getByLabelText(/Lobby Name/i), {
+    fireEvent.change(screen.getByLabelText(/Game Name/i), {
       target: { value: '' },
     });
     fireEvent.change(screen.getByLabelText(/Your Display Name/i), {
       target: { value: '' },
     });
 
-    const button = screen.getByRole('button', { name: /Create Lobby/i });
+    const button = screen.getByRole('button', { name: /Create Game/i });
     fireEvent.click(button);
 
     await waitFor(() => {

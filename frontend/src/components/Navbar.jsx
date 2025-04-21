@@ -9,6 +9,7 @@ import {
   Menu,
   MenuItem,
   CircularProgress,
+  Box,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -16,6 +17,7 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import CheckIcon from '@mui/icons-material/CheckCircle';
 import CrossIcon from '@mui/icons-material/Cancel';
 import ErrorIcon from '@mui/icons-material/Error';
+import LockIcon from '@mui/icons-material/Lock';
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import useWebex from '../hooks/useWebex';
@@ -40,11 +42,34 @@ export default function Navbar({ darkMode, setDarkMode }) {
   };
 
   return (
-    <AppBar position="static" elevation={0}>
+    <AppBar
+      position="static"
+      elevation={3}
+      sx={{
+        backgroundColor: darkMode ? 'background.paper' : 'primary.main',
+        borderBottom: darkMode ? '1px solid' : 'none',
+        borderColor: darkMode ? 'primary.main' : 'inherit',
+      }}
+    >
       <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          Webex Launchpad
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <LockIcon
+            sx={{ mr: 1, color: darkMode ? 'primary.main' : 'inherit' }}
+          />
+          <Typography
+            variant="h6"
+            sx={{
+              flexGrow: 1,
+              fontFamily: 'monospace',
+              fontWeight: 'bold',
+              letterSpacing: '0.1rem',
+            }}
+          >
+            LOCKOUT
+          </Typography>
+        </Box>
+
+        <Box sx={{ flexGrow: 1 }} />
 
         {/* Dark mode toggle */}
         <Tooltip title="Toggle dark mode">
@@ -52,6 +77,12 @@ export default function Navbar({ darkMode, setDarkMode }) {
             color="inherit"
             onClick={() => setDarkMode(!darkMode)}
             aria-label="Toggle Dark Mode"
+            sx={{
+              mr: 1,
+              '&:hover': {
+                color: darkMode ? 'primary.main' : 'inherit',
+              },
+            }}
           >
             {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
@@ -63,6 +94,11 @@ export default function Navbar({ darkMode, setDarkMode }) {
             color="inherit"
             onClick={handleMenuOpen}
             aria-label="Webex Info Menu"
+            sx={{
+              '&:hover': {
+                color: darkMode ? 'primary.main' : 'inherit',
+              },
+            }}
           >
             <MenuIcon />
           </IconButton>

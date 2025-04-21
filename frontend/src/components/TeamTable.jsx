@@ -17,8 +17,9 @@ import {
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/CheckCircle';
 import NotReadyIcon from '@mui/icons-material/HighlightOff';
-import TeamLeadIcon from '@mui/icons-material/WorkspacePremium';
-import HostIcon from '@mui/icons-material/Star';
+import CodeIcon from '@mui/icons-material/Code';
+import HostIcon from '@mui/icons-material/Security';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PropTypes from 'prop-types';
 import { useLobbyContext } from '../context/useLobbyContext';
 
@@ -53,27 +54,60 @@ export default function TeamTable({
         {currentUser && (
           <Stack direction="row" spacing={1}>
             {isCurrentUserTeam && !isUserTeamLead() && (
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={requestTeamLead}
-                disabled={hasTeamLead(currentUser.id)}
+              <Tooltip
+                title="The Hacker provides strategic clues to help their team extract data. As a Hacker, you'll be able to see all the board's secrets."
+                arrow
               >
-                Become Team Lead
-              </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={requestTeamLead}
+                  disabled={hasTeamLead(currentUser.id)}
+                  startIcon={<CodeIcon />}
+                  sx={{
+                    borderColor: 'primary.main',
+                    '&:hover': {
+                      backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                    },
+                  }}
+                >
+                  Become Hacker
+                </Button>
+              </Tooltip>
             )}
             {isCurrentUserTeam && isUserTeamLead() && (
-              <Button
-                variant="outlined"
-                color="secondary"
-                size="small"
-                onClick={demoteTeamLead}
+              <Tooltip
+                title="Step down from Hacker role and become an AI Agent"
+                arrow
               >
-                Step Down
-              </Button>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  size="small"
+                  onClick={demoteTeamLead}
+                  startIcon={<SmartToyIcon />}
+                  sx={{
+                    borderColor: 'secondary.main',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                    },
+                  }}
+                >
+                  Become AI Agent
+                </Button>
+              </Tooltip>
             )}
             {!isCurrentUserTeam && (
-              <Button variant="outlined" size="small" onClick={toggleTeam}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={toggleTeam}
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                  },
+                }}
+              >
                 Switch Team
               </Button>
             )}
@@ -103,20 +137,34 @@ export default function TeamTable({
 
                   <TableCell align="center">
                     {participant.is_team_lead && (
-                      <Tooltip title="Team Lead">
-                        <TeamLeadIcon
+                      <Tooltip title="Hacker - Gives strategic clues to the team">
+                        <CodeIcon
                           fontSize="small"
-                          aria-label="Team Lead"
-                          sx={{ mx: 0.5 }}
+                          aria-label="Hacker"
+                          sx={{ mx: 0.5, color: 'primary.main' }}
+                        />
+                      </Tooltip>
+                    )}
+                    {!participant.is_team_lead && (
+                      <Tooltip title="AI Agent - Decodes clues and extracts data">
+                        <SmartToyIcon
+                          fontSize="small"
+                          aria-label="AI Agent"
+                          sx={{ mx: 0.5, color: 'text.secondary' }}
                         />
                       </Tooltip>
                     )}
                     {participant.is_host && (
-                      <Tooltip title="Host">
+                      <Tooltip title="Security Admin - Controls the game">
                         <HostIcon
                           fontSize="small"
                           aria-label="Host"
-                          sx={{ mx: 0.5 }}
+                          sx={{
+                            mx: 0.5,
+                            color: participant.is_team_lead
+                              ? 'primary.main'
+                              : 'text.secondary',
+                          }}
                         />
                       </Tooltip>
                     )}

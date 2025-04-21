@@ -11,23 +11,25 @@ describe('LandingPage', () => {
     renderWithRouter(<LandingPage />);
   });
 
-  it('renders welcome heading and description', () => {
+  it('renders lockout heading and description', () => {
     expect(
-      screen.getByRole('heading', { name: /welcome to webex launchpad/i }),
+      screen.getByRole('heading', { name: /lockout/i }),
     ).toBeInTheDocument();
 
-    expect(
-      screen.getByText(/create and join pre-game lobbies/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/in the digital underworld/i)).toBeInTheDocument();
+
+    expect(screen.getByText(/bluewave/i)).toBeInTheDocument();
+
+    expect(screen.getByText(/redshift/i)).toBeInTheDocument();
   });
 
-  it('renders Create a Lobby button', () => {
-    const button = screen.getByRole('button', { name: /create a lobby/i });
+  it('renders Create a Game button', () => {
+    const button = screen.getByRole('button', { name: /create a game/i });
     expect(button).toBeInTheDocument();
   });
 
   it('calls navigate("/lobby") on button click', () => {
-    const button = screen.getByRole('button', { name: /create a lobby/i });
+    const button = screen.getByRole('button', { name: /create a game/i });
     fireEvent.click(button);
 
     expect(globalThis.mockNavigate).toHaveBeenCalledWith('/lobby');
