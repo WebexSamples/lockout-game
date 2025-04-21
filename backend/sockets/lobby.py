@@ -28,6 +28,12 @@ from ..utils.helpers import auto_assign_team
 def register_lobby_socket_handlers(socketio):
     """Registers lobby socket events."""
 
+    def send_lobby_update(lobby_id, lobby):
+        """Helper function to send consistent lobby updates with ID included"""
+        # Include the lobby_id in all lobby updates
+        update_data = {**lobby, "id": lobby_id}
+        emit(LOBBY_UPDATE, update_data, room=lobby_id)
+
     @socketio.on(LOBBY_JOIN)
     def handle_join_lobby(data):
         lobby_id = data.get("lobby_id")
@@ -63,7 +69,7 @@ def register_lobby_socket_handlers(socketio):
             lobby["participants"].append(participant)
 
         join_room(lobby_id)
-        emit(LOBBY_UPDATE, lobby, room=lobby_id)
+        send_lobby_update(lobby_id, lobby)
 
     @socketio.on(LOBBY_LEAVE)
     def handle_leave_lobby(data):
@@ -76,7 +82,7 @@ def register_lobby_socket_handlers(socketio):
 
         lobby["participants"] = [p for p in lobby["participants"] if p["id"] != user_id]
         leave_room(lobby_id)
-        emit(LOBBY_UPDATE, lobby, room=lobby_id)
+        send_lobby_update(lobby_id, lobby)
 
     @socketio.on(LOBBY_UPDATE_DISPLAY_NAME)
     def handle_update_display_name(data):
@@ -94,7 +100,7 @@ def register_lobby_socket_handlers(socketio):
                 p["display_name"] = new_name
                 break
 
-        emit(LOBBY_UPDATE, lobby, room=lobby_id)
+        send_lobby_update(lobby_id, lobby)
 
     @socketio.on(LOBBY_TOGGLE_READY)
     def handle_toggle_ready(data):
@@ -111,7 +117,7 @@ def register_lobby_socket_handlers(socketio):
                 p["ready"] = not p.get("ready", False)
                 break
 
-        emit(LOBBY_UPDATE, lobby, room=lobby_id)
+        send_lobby_update(lobby_id, lobby)
 
     @socketio.on(LOBBY_ASSIGN_TEAM_LEAD)
     def handle_assign_team_lead(data):
@@ -134,7 +140,7 @@ def register_lobby_socket_handlers(socketio):
                 p["ready"] = False
                 break
 
-        emit(LOBBY_UPDATE, lobby, room=lobby_id)
+        send_lobby_update(lobby_id, lobby)
 
     @socketio.on(LOBBY_DEMOTE_TEAM_LEAD)
     def handle_demote_team_lead(data):
@@ -152,7 +158,7 @@ def register_lobby_socket_handlers(socketio):
                 p["ready"] = False
                 break
 
-        emit(LOBBY_UPDATE, lobby, room=lobby_id)
+        send_lobby_update(lobby_id, lobby)
 
     @socketio.on(LOBBY_CHANGE_TEAM)
     def handle_change_team(data):
@@ -174,8 +180,7 @@ def register_lobby_socket_handlers(socketio):
                 p["ready"] = False
                 break
 
-        emit(LOBBY_UPDATE, lobby, room=lobby_id)
-
+        send_lobby_update(lobby_id, lobby)
 
     @socketio.on(LOBBY_START_GAME)
     def handle_start_game(data):
@@ -242,7 +247,7 @@ def register_lobby_socket_handlers(socketio):
         emit(LOBBY_END_GAME, {}, room=lobby_id)
         
         # Also send a lobby update to refresh player states
-        emit(LOBBY_UPDATE, lobby, room=lobby_id)
+        send_lobby_update(lobby_id, lobby)
 
     def _can_start_game(lobby):
         p = lobby["participants"]
