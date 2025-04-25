@@ -1,15 +1,12 @@
 # backend/sockets/game.py
 
 from flask_socketio import emit, join_room, leave_room
-import time
 
 from ..constants import (
     GAME_ERROR,
     GAME_UPDATE,
     GAME_SUBMIT_KEYWORD,
     GAME_SUBMIT_GUESS,
-    TEAM1,
-    TEAM2,
     FIELD_IS_TEAM_LEAD,
     FIELD_TEAM,
 )
@@ -17,7 +14,6 @@ from ..routes.lobby import get_lobbies
 from ..utils.game import (
     create_game,
     get_game,
-    end_game,
     get_sanitized_game_state,
     submit_keyword,
     submit_guess,

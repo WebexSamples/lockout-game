@@ -1,6 +1,5 @@
 # backend/utils/game.py
 import random
-import uuid
 import time
 from ..constants import (
     CARD_TYPE_TEAM1,
@@ -13,8 +12,7 @@ from ..constants import (
     NEUTRAL_CARD_COUNT,
     GAME_PHASE_KEYWORD_ENTRY,
     TEAM1,
-    TEAM2,
-    DEFAULT_POINTS_TARGET
+    TEAM2
 )
 
 # Sample word list for game cards
