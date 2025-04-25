@@ -12,6 +12,15 @@ export const SOCKET_EVENTS = {
   LOBBY_FORCE_START: 'lobby:force_start',
   LOBBY_CHANGE_TEAM: 'lobby:change_team',
   LOBBY_END_GAME: 'lobby:end_game',
+
+  // Game events
+  GAME_UPDATE: 'game:update',
+  GAME_ERROR: 'game:error',
+  GAME_JOIN: 'join_game',
+  GAME_LEAVE: 'leave_game',
+  GAME_SUBMIT_KEYWORD: 'game:submit_keyword',
+  GAME_SUBMIT_GUESS: 'game:submit_guess',
+  GAME_END_TURN: 'end_turn',
 };
 
 // Team constants
@@ -20,9 +29,31 @@ export const TEAMS = {
   TEAM2: 'team2',
 };
 
+// Card types
+export const CARD_TYPES = {
+  TEAM1_CARD: 'team1_card', // Previously 'bluewave'
+  TEAM2_CARD: 'team2_card', // Previously 'redshift'
+  PENALTY: 'penalty', // Previously 'trap'
+  NEUTRAL: 'neutral', // Previously 'honeypot'
+};
+
+// Field names to match backend constants
+export const FIELDS = {
+  IS_TEAM_LEAD: 'is_team_lead',
+  TEAM: 'team',
+};
+
 export const TEAM_LABELS = {
   [TEAMS.TEAM1]: 'Team 1 (Bluewave)',
   [TEAMS.TEAM2]: 'Team 2 (Redshift)',
+};
+
+// Game phases
+export const GAME_PHASE = {
+  KEYWORD_ENTRY: 'keyword_entry', // Previously 'hacker_prompt'
+  TEAM_GUESSING: 'team_guessing', // Previously 'agent_guessing'
+  REVEAL_RESULTS: 'reveal_results',
+  TURN_END: 'turn_end',
 };
 
 // Route constants

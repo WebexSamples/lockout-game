@@ -46,7 +46,7 @@ const LobbyContent = () => {
 
   // If game has started, show the game component
   if (gameStarted) {
-    return <Game />;
+    return <Game key={`game-${user?.id}`} />;
   }
 
   // Otherwise, show the lobby UI with HostControls moved below LobbyActions

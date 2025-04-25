@@ -4,6 +4,7 @@ vi.unmock('../api'); // ⬅️ this removes the global mock from mockApi.js
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import api from '../api';
 import axios from 'axios';
+import { API_BASE_URL } from '../api';
 
 vi.mock('axios');
 
@@ -20,12 +21,13 @@ describe('api util functions', () => {
 
     expect(axios).toHaveBeenCalledWith({
       method: 'post',
-      url: expect.stringContaining('/lobby'),
+      url: `${API_BASE_URL}/lobby`,
       data: {
         host_id: 'host-1',
         host_display_name: 'Alice',
         lobby_name: 'Test Lobby',
       },
+      params: null,
     });
 
     expect(result).toEqual(mockResponse);
@@ -39,8 +41,9 @@ describe('api util functions', () => {
 
     expect(axios).toHaveBeenCalledWith({
       method: 'get',
-      url: expect.stringContaining('/lobby/abc-123'),
+      url: `${API_BASE_URL}/lobby/abc-123`,
       data: null,
+      params: null,
     });
 
     expect(result).toEqual(mockLobby);

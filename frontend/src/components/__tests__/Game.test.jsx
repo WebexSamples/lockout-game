@@ -1,63 +1,108 @@
 // frontend/src/components/__tests__/Game.test.jsx
 import { describe, it, expect, vi } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { createMockLobbyContext } from '../../test/mocks/mockLobbyContext';
 import { renderWithLobbyContext } from '../../test/testUtils';
 import Game from '../Game';
 
-describe('Game', () => {
-  describe('Game UI', () => {
-    it('renders game in progress message', () => {
-      const mockContext = createMockLobbyContext();
-      renderWithLobbyContext(<Game />, mockContext);
+// Mock GameContent component to simplify testing the wrapper
+vi.mock('../GameContent', () => ({
+  default: ({ endGame, isUserHost, lobby, user }) => (
+    <div data-testid="game-content">
+      <p>Game Content Mock</p>
+      <button data-testid="mock-end-game-btn" onClick={endGame}>
+        Mock End Game
+      </button>
+      <div data-testid="props-check">
+        <span data-testid="is-host">{isUserHost ? 'true' : 'false'}</span>
+        <span data-testid="user-id">{user?.id}</span>
+        <span data-testid="lobby-id">{lobby?.id}</span>
+      </div>
+    </div>
+  ),
+}));
 
-      expect(screen.getByText(/Game In Progress/i)).toBeInTheDocument();
-      expect(
-        screen.getByText(/The Lockout game is currently in progress/i),
-      ).toBeInTheDocument();
+// Mock GameProvider to avoid socket connection issues in tests
+vi.mock('../../context/GameProvider', () => ({
+  GameProvider: ({ children, socket, lobbyId, user }) => (
+    <div data-testid="game-provider">
+      <div data-testid="provider-props">
+        <span data-testid="provider-lobby-id">{lobbyId}</span>
+        <span data-testid="provider-user-id">{user?.id}</span>
+        <span data-testid="has-socket">{socket ? 'true' : 'false'}</span>
+      </div>
+      {children}
+    </div>
+  ),
+}));
+
+describe('Game (Wrapper)', () => {
+  it('renders the GameContent component with GameProvider', () => {
+    const mockContext = createMockLobbyContext({
+      lobby: { id: 'test-lobby-123' },
+      user: { id: 'test-user-123', display_name: 'Test User' },
+      socket: { on: vi.fn(), emit: vi.fn() },
     });
+
+    renderWithLobbyContext(<Game />, mockContext);
+
+    // Check that GameProvider is rendered with correct props
+    expect(screen.getByTestId('game-provider')).toBeInTheDocument();
+    expect(screen.getByTestId('provider-lobby-id')).toHaveTextContent(
+      'test-lobby-123',
+    );
+    expect(screen.getByTestId('provider-user-id')).toHaveTextContent(
+      'test-user-123',
+    );
+    expect(screen.getByTestId('has-socket')).toHaveTextContent('true');
+
+    // Check that GameContent is rendered
+    expect(screen.getByTestId('game-content')).toBeInTheDocument();
   });
 
-  describe('Host functionality', () => {
-    it('shows end game button for the host', () => {
-      const endGame = vi.fn();
-      const mockHostContext = createMockLobbyContext({
-        isUserHost: vi.fn(() => true),
-        endGame,
-      });
+  it('passes correct props to GameContent', () => {
+    const endGame = vi.fn();
+    const getCurrentTeam = vi.fn();
 
-      renderWithLobbyContext(<Game />, mockHostContext);
-
-      const endButton = screen.getByRole('button', {
-        name: /End Game & Return to Lobby/i,
-      });
-      expect(endButton).toBeInTheDocument();
-
-      // Test button action
-      fireEvent.click(endButton);
-      expect(endGame).toHaveBeenCalled();
+    const mockContext = createMockLobbyContext({
+      endGame,
+      getCurrentTeam,
+      lobby: {
+        id: 'lobby-123',
+        participants: [
+          { id: 'user-123', display_name: 'Test User', is_host: true },
+        ],
+      },
+      user: { id: 'user-123', display_name: 'Test User' },
     });
 
-    it('hides end game button for non-host users', () => {
-      const mockNonHostContext = createMockLobbyContext({
-        isUserHost: vi.fn(() => false),
-        lobby: {
-          participants: [
-            { id: 'host123', display_name: 'The Host', is_host: true },
-          ],
-        },
-      });
+    renderWithLobbyContext(<Game />, mockContext);
 
-      renderWithLobbyContext(<Game />, mockNonHostContext);
+    // Check user is host properly determined from participants array
+    expect(screen.getByTestId('is-host')).toHaveTextContent('true');
+    expect(screen.getByTestId('user-id')).toHaveTextContent('user-123');
+    expect(screen.getByTestId('lobby-id')).toHaveTextContent('lobby-123');
 
-      // Button should not be visible
-      expect(
-        screen.queryByRole('button', { name: /End Game/i }),
-      ).not.toBeInTheDocument();
+    // Test endGame function forwarding
+    screen.getByTestId('mock-end-game-btn').click();
+    expect(endGame).toHaveBeenCalled();
+  });
 
-      // Should show info message instead
-      expect(screen.getByText(/Only the host/i)).toBeInTheDocument();
-      expect(screen.getByText(/The Host/i)).toBeInTheDocument();
+  it('properly handles non-host users', () => {
+    const mockContext = createMockLobbyContext({
+      lobby: {
+        id: 'lobby-456',
+        participants: [
+          { id: 'host-789', display_name: 'The Host', is_host: true },
+          { id: 'user-456', display_name: 'Regular User', is_host: false },
+        ],
+      },
+      user: { id: 'user-456', display_name: 'Regular User' },
     });
+
+    renderWithLobbyContext(<Game />, mockContext);
+
+    // User should not be identified as host
+    expect(screen.getByTestId('is-host')).toHaveTextContent('false');
   });
 });
