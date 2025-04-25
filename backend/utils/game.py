@@ -48,14 +48,6 @@ def create_game(lobby_id):
         "active_team": TEAM1,  # Team 1 starts first
         "round_number": 1,
         "game_phase": GAME_PHASE_KEYWORD_ENTRY,
-        "team_data": {
-            TEAM1: {
-                "points_remaining": DEFAULT_POINTS_TARGET,
-            },
-            TEAM2: {
-                "points_remaining": DEFAULT_POINTS_TARGET,
-            }
-        },
         "game_started_at": int(time.time()),
         "active_keyword": None,
         "board": board,
@@ -116,42 +108,62 @@ def get_sanitized_game_state(game_state, user_id, participants):
     """
     Return a sanitized version of the game state based on user role.
     Team leads can see unrevealed card types, regular team members cannot.
+    Also counts remaining cards for each team based on unrevealed cards.
     """
     if not game_state:
         return None
         
-    # Create a deep copy of the game state to avoid modifying the original
-    sanitized = {
-        "lobby_id": game_state["lobby_id"],
-        "active_team": game_state["active_team"],
-        "round_number": game_state["round_number"],
-        "game_phase": game_state["game_phase"],
-        "team_data": game_state["team_data"].copy(),
-        "game_started_at": game_state["game_started_at"],
-        "active_keyword": game_state["active_keyword"],
-        "game_over": game_state["game_over"],
-        "winner": game_state["winner"]
-    }
-    
     # Find the user's role
     user_participant = next((p for p in participants if p["id"] == user_id), None)
     is_team_lead = user_participant and user_participant.get("is_team_lead", False) if user_participant else False
     
     # Copy the board, sanitizing as needed based on user role
     sanitized_board = []
+    
+    # Count unrevealed cards for each team
+    team1_remaining = 0
+    team2_remaining = 0
+    
     for card in game_state["board"]:
         card_copy = card.copy()
-        # If user is not a team lead and card is not revealed, remove the type
-        if not is_team_lead and not card["revealed"]:
-            # For team members, don't expose the card type of unrevealed cards
-            card_copy = {
-                "id": card["id"],
-                "word": card["word"],
-                "revealed": card["revealed"]
-            }
+        
+        # Count remaining cards for each team
+        if not card["revealed"]:
+            if card["type"] == CARD_TYPE_TEAM1:
+                team1_remaining += 1
+            elif card["type"] == CARD_TYPE_TEAM2:
+                team2_remaining += 1
+            
+            # If user is not a team lead, remove the type info
+            if not is_team_lead:
+                card_copy = {
+                    "id": card["id"],
+                    "word": card["word"],
+                    "revealed": card["revealed"]
+                }
+        
         sanitized_board.append(card_copy)
     
-    sanitized["board"] = sanitized_board
+    # Create team data using counted values
+    team_data = {
+        TEAM1: {"remaining_cards": team1_remaining},
+        TEAM2: {"remaining_cards": team2_remaining}
+    }
+    
+    # Create a deep copy of the game state to avoid modifying the original
+    sanitized = {
+        "lobby_id": game_state["lobby_id"],
+        "active_team": game_state["active_team"],
+        "round_number": game_state["round_number"],
+        "game_phase": game_state["game_phase"],
+        "team_data": team_data,
+        "game_started_at": game_state["game_started_at"],
+        "active_keyword": game_state["active_keyword"],
+        "game_over": game_state["game_over"],
+        "winner": game_state["winner"],
+        "board": sanitized_board
+    }
+    
     return sanitized
 
 
@@ -167,10 +179,19 @@ def submit_keyword(game_state, keyword_data):
     if not isinstance(keyword_data, dict) or "word" not in keyword_data or "point_count" not in keyword_data or "team" not in keyword_data:
         return False
     
-    # Validate team has enough points remaining
+    # Count remaining cards for the team
     team = keyword_data["team"]
     count = keyword_data["point_count"]
-    if team not in game_state["team_data"] or count > game_state["team_data"][team]["points_remaining"] or count <= 0:
+    
+    # Count how many cards remain for this team
+    remaining_cards = 0
+    for card in game_state["board"]:
+        if not card["revealed"] and ((team == TEAM1 and card["type"] == CARD_TYPE_TEAM1) or 
+                                     (team == TEAM2 and card["type"] == CARD_TYPE_TEAM2)):
+            remaining_cards += 1
+    
+    # Validate team has enough cards remaining
+    if count <= 0 or count > remaining_cards:
         return False
         
     # Set active keyword
@@ -234,11 +255,15 @@ def submit_guess(game_state, guess_data):
         else:
             result["incorrect_guesses"] += 1
     
-    # Update the team's points remaining based on correct guesses
-    game_state["team_data"][active_team]["points_remaining"] -= result["correct_guesses"]
+    # Check for win condition - if all of team's cards are revealed, they win
+    team_cards_remaining = 0
+    card_type_to_check = CARD_TYPE_TEAM1 if active_team == TEAM1 else CARD_TYPE_TEAM2
     
-    # Check for win condition
-    if game_state["team_data"][active_team]["points_remaining"] <= 0:
+    for card in game_state["board"]:
+        if not card["revealed"] and card["type"] == card_type_to_check:
+            team_cards_remaining += 1
+    
+    if team_cards_remaining == 0:
         game_state["game_over"] = True
         game_state["winner"] = active_team
     

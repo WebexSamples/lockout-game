@@ -29,13 +29,28 @@ export const LobbyProvider = ({ lobbyId, initialUser, children }) => {
     [lobbyId],
   );
 
+  // Fetch initial lobby data
   useEffect(() => {
     if (!lobbyId) return;
-    api
-      .getLobby(lobbyId)
-      .then((data) => setLobby(data))
-      .catch((err) => console.error('Failed to load lobby:', err))
-      .finally(() => setLoading(false));
+
+    const fetchLobbyData = async () => {
+      try {
+        const data = await api.getLobby(lobbyId);
+        setLobby(data);
+
+        // Check if game is in progress from the lobby data
+        if (data.game_in_progress) {
+          console.log('Game in progress detected from lobby data');
+          setGameStarted(true);
+        }
+      } catch (err) {
+        console.error('Failed to load lobby:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLobbyData();
   }, [lobbyId]);
 
   const getCurrentTeam = useCallback(() => {

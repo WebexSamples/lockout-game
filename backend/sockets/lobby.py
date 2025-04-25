@@ -23,6 +23,7 @@ from ..constants import (
 )
 from ..routes.lobby import get_lobbies
 from ..utils.helpers import auto_assign_team
+from ..utils.game import create_game, get_game
 
 
 def register_lobby_socket_handlers(socketio):
@@ -190,7 +191,23 @@ def register_lobby_socket_handlers(socketio):
         if not lobby or not _can_start_game(lobby):
             emit(LOBBY_ERROR, {"message": "Cannot start game"})
             return
-
+        
+        # Initialize the game board and state
+        game = get_game(lobby_id)
+        if not game:
+            game = create_game(lobby_id)
+        
+        if not game:
+            emit(LOBBY_ERROR, {"message": "Failed to create game"})
+            return
+        
+        # Set game in progress flag in lobby data
+        lobby["game_in_progress"] = True
+        
+        # Send updated lobby info to all clients
+        send_lobby_update(lobby_id, lobby)
+        
+        # Emit game start event
         emit(LOBBY_START_GAME, {}, room=lobby_id)
 
     @socketio.on(LOBBY_FORCE_START)
@@ -215,6 +232,21 @@ def register_lobby_socket_handlers(socketio):
                 emit(LOBBY_ERROR, {"message": "Only the host can force start the game"})
                 return
 
+        # Initialize the game board and state
+        game = get_game(lobby_id)
+        if not game:
+            game = create_game(lobby_id)
+        
+        if not game:
+            emit(LOBBY_ERROR, {"message": "Failed to create game"})
+            return
+        
+        # Set game in progress flag in lobby data
+        lobby["game_in_progress"] = True
+        
+        # Send updated lobby info to all clients
+        send_lobby_update(lobby_id, lobby)
+
         # No other checks - the host can force start anytime
         emit(LOBBY_START_GAME, {}, room=lobby_id)
 
@@ -238,6 +270,9 @@ def register_lobby_socket_handlers(socketio):
         if not is_host:
             emit(LOBBY_ERROR, {"message": "Only the host can end the game"})
             return
+        
+        # Set game in progress flag to false
+        lobby["game_in_progress"] = False
 
         # Reset all players' ready status to false
         for p in lobby["participants"]:

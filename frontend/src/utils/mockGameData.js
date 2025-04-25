@@ -5,10 +5,10 @@ import { TEAMS } from '../constants';
  * Game turn phases
  */
 export const GAME_PHASE = {
-  HACKER_PROMPT: 'hacker_prompt',  // Hacker provides a prompt
+  HACKER_PROMPT: 'hacker_prompt', // Hacker provides a prompt
   AGENT_GUESSING: 'agent_guessing', // Agents make guesses based on the prompt
   REVEAL_RESULTS: 'reveal_results', // Results are shown
-  TURN_END: 'turn_end'             // Turn ends, next team's turn begins
+  TURN_END: 'turn_end', // Turn ends, next team's turn begins
 };
 
 /**
@@ -24,8 +24,8 @@ export const MOCK_GAME_STATE = {
     },
     [TEAMS.TEAM2]: {
       dataFragments: 5,
-    }
+    },
   },
   gameStartedAt: new Date().toISOString(),
-  activePrompt: null   // Stores the current prompt from the hacker
+  activePrompt: null, // Stores the current prompt from the hacker
 };
