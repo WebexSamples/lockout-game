@@ -61,4 +61,5 @@ export const ROUTES = {
   HOME: '/',
   GAME: '/game',
   GAME_WITH_ID: (lobbyId) => `/game/${lobbyId}`,
+  ABOUT: '/about',
 };
