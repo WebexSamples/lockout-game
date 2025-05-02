@@ -11,6 +11,7 @@ import CreateLobby from './components/CreateLobby';
 import Lobby from './components/Lobby';
 import Navbar from './components/Navbar';
 import LandingPage from './components/LandingPage';
+import About from './components/About';
 import useWebex from './hooks/useWebex';
 import { ROUTES } from './constants';
 
@@ -48,6 +49,7 @@ function App() {
           <Route path={ROUTES.HOME} element={<LandingPage />} />
           <Route path={ROUTES.GAME} element={<CreateLobby />} />
           <Route path={ROUTES.GAME_WITH_ID(':lobbyId')} element={<Lobby />} />
+          <Route path={ROUTES.ABOUT} element={<About />} />
           <Route path="*" element={<LandingPage />} />
         </Routes>
       </Container>
