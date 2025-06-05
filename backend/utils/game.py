@@ -228,7 +228,8 @@ def submit_guess(game_state, guess_data):
             guessed_cards.append(card)
     
     # Validate we have the right number of cards
-    if len(guessed_cards) != game_state["active_keyword"]["point_count"]:
+    # ALLOW: guessers can submit 1 up to point_count cards
+    if len(guessed_cards) == 0 or len(guessed_cards) > game_state["active_keyword"]["point_count"]:
         return False, None
     
     # Process the guesses

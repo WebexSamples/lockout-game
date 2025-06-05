@@ -149,7 +149,7 @@ GameTile.propTypes = {
 const GameBoard = forwardRef(
   ({ isUserTeamLead, userTeam, isUserTurn }, ref) => {
     const theme = useTheme();
-    const { gameState, handleSelectCard } = useGameContext();
+    const { gameState, handleSubmitGuess } = useGameContext();
     const [boardData, setBoardData] = useState(gameState?.board || []);
     const [selectedCards, setSelectedCards] = useState([]);
     const isTeamMember = userTeam && !isUserTeamLead;
@@ -211,10 +211,8 @@ const GameBoard = forwardRef(
       if (selectedCards.length === 0 || !activeKeyword || !activeKeyword.count)
         return;
 
-      // Use the handleSelectCard from context for each selected card
-      selectedCards.forEach((cardId) => {
-        handleSelectCard(cardId);
-      });
+      // Submit all selected cards at once
+      handleSubmitGuess(selectedCards);
 
       // Reset selections after submitting
       setSelectedCards([]);
@@ -342,7 +340,8 @@ const GameBoard = forwardRef(
                 variant="contained"
                 color={userTeam === TEAMS.TEAM1 ? 'primary' : 'error'}
                 onClick={submitGuesses}
-                disabled={selectedCards.length !== activeKeyword.count}
+                // Allow submitting any number up to the count
+                disabled={selectedCards.length > activeKeyword.count}
               >
                 Submit Guess ({selectedCards.length}/{activeKeyword.count})
               </Button>

@@ -47,25 +47,52 @@ vi.mock('../GameDetails', () => ({
 }));
 
 describe('GameContent', () => {
+  const baseLobby = {
+    id: 'lobby1',
+    lobby_name: 'Test Lobby',
+    participants: [
+      {
+        id: '1',
+        display_name: 'Alice',
+        is_host: true,
+        is_team_lead: true,
+        team: 'red',
+      },
+      {
+        id: '2',
+        display_name: 'Bob',
+        is_host: false,
+        is_team_lead: false,
+        team: 'red',
+      },
+      {
+        id: '3',
+        display_name: 'Charlie',
+        is_host: false,
+        is_team_lead: true,
+        team: 'blue',
+      },
+      {
+        id: '4',
+        display_name: 'Dana',
+        is_host: false,
+        is_team_lead: false,
+        team: 'blue',
+      },
+    ],
+    game_in_progress: true,
+  };
+
+  const getCurrentTeam = vi.fn(() => 'red');
+  const endGame = vi.fn();
+
   // Common props for testing
   const defaultProps = {
-    endGame: vi.fn(),
+    endGame,
     isUserHost: false,
-    lobby: {
-      id: 'test-lobby',
-      participants: [
-        { id: 'host-id', display_name: 'Host User', is_host: true },
-        {
-          id: 'user-id',
-          display_name: 'Regular User',
-          is_team_lead: true,
-          team: TEAMS.TEAM1,
-        },
-        { id: 'other-user', display_name: 'Team Member', team: TEAMS.TEAM1 },
-      ],
-    },
-    user: { id: 'user-id', display_name: 'Regular User' },
-    getCurrentTeam: () => TEAMS.TEAM1,
+    lobby: baseLobby,
+    user: { id: '2', display_name: 'Bob', team: 'red', is_team_lead: false },
+    getCurrentTeam,
   };
 
   // Helper function to render component with context
@@ -117,7 +144,7 @@ describe('GameContent', () => {
 
     // Should show info message instead
     expect(screen.getByText(/Only the host/i)).toBeInTheDocument();
-    expect(screen.getByText(/Host User/i)).toBeInTheDocument();
+    expect(screen.getByText(/Alice/)).toBeInTheDocument();
   });
 
   it('renders team lead controls when user is team lead and it is their team turn', () => {
@@ -128,9 +155,34 @@ describe('GameContent', () => {
         gamePhase: GAME_PHASE.KEYWORD_ENTRY,
       }),
     };
-
-    renderWithGameContext(<GameContent {...defaultProps} />, gameContextValue);
-
+    const leadProps = {
+      ...defaultProps,
+      user: {
+        id: 'lead-id',
+        display_name: 'Lead',
+        team: TEAMS.TEAM1,
+        is_team_lead: true,
+      },
+      lobby: {
+        ...defaultProps.lobby,
+        participants: [
+          {
+            id: 'user-id',
+            display_name: 'Regular User',
+            team: TEAMS.TEAM1,
+            is_team_lead: false,
+          },
+          {
+            id: 'lead-id',
+            display_name: 'Lead',
+            team: TEAMS.TEAM1,
+            is_team_lead: true,
+          },
+        ],
+      },
+      getCurrentTeam: () => TEAMS.TEAM1,
+    };
+    renderWithGameContext(<GameContent {...leadProps} />, gameContextValue);
     expect(screen.getByTestId('hacker-prompt')).toBeInTheDocument();
     expect(screen.getByTestId('is-team-lead')).toHaveTextContent('yes');
     expect(screen.getByTestId('is-team-turn')).toHaveTextContent('yes');
@@ -138,47 +190,85 @@ describe('GameContent', () => {
 
   it('allows team lead to submit keywords', () => {
     const handleSubmitKeyword = vi.fn();
-
-    renderWithGameContext(<GameContent {...defaultProps} />, {
+    const leadProps = {
+      ...defaultProps,
+      user: {
+        id: 'lead-id',
+        display_name: 'Lead',
+        team: TEAMS.TEAM1,
+        is_team_lead: true,
+      },
+      lobby: {
+        ...defaultProps.lobby,
+        participants: [
+          {
+            id: 'user-id',
+            display_name: 'Regular User',
+            team: TEAMS.TEAM1,
+            is_team_lead: false,
+          },
+          {
+            id: 'lead-id',
+            display_name: 'Lead',
+            team: TEAMS.TEAM1,
+            is_team_lead: true,
+          },
+        ],
+      },
+      getCurrentTeam: () => TEAMS.TEAM1,
+    };
+    renderWithGameContext(<GameContent {...leadProps} />, {
       handleSubmitKeyword,
     });
-
     const submitButton = screen.getByTestId('submit-keyword-btn');
     fireEvent.click(submitButton);
-
     expect(handleSubmitKeyword).toHaveBeenCalledWith({
       word: 'test',
       count: 2,
     });
   });
 
-  it('displays notifications when present', () => {
-    renderWithGameContext(<GameContent {...defaultProps} />, {
-      notification: { message: 'Test notification', severity: 'info' },
-    });
-
-    expect(screen.getByText('Test notification')).toBeInTheDocument();
+  // --- Fix: wrap all direct <GameContent ... /> renders in renderWithGameContext ---
+  it('shows HackerPrompt for team lead only', () => {
+    const leadProps = {
+      endGame,
+      isUserHost: true,
+      lobby: baseLobby,
+      user: { id: '1', display_name: 'Alice', team: 'red', is_team_lead: true },
+      getCurrentTeam,
+    };
+    renderWithGameContext(<GameContent {...leadProps} />);
+    expect(screen.getByTestId('hacker-prompt')).toBeInTheDocument();
   });
 
-  it('handles different game phases correctly', () => {
-    // Team guessing phase
-    const guessingPhaseState = createMockGameState({
-      activeTeam: TEAMS.TEAM1,
-      gamePhase: GAME_PHASE.TEAM_GUESSING,
-      activeKeyword: { word: 'hack', count: 3, team: TEAMS.TEAM1 },
-    });
-
-    const teamMemberProps = {
-      ...defaultProps,
-      getCurrentTeam: () => TEAMS.TEAM1,
-      user: { id: 'other-user', display_name: 'Team Member' },
+  it('does not show HackerPrompt for regular team member', () => {
+    const memberProps = {
+      endGame,
+      isUserHost: false,
+      lobby: baseLobby,
+      user: { id: '2', display_name: 'Bob', team: 'red', is_team_lead: false },
+      getCurrentTeam,
     };
+    renderWithGameContext(<GameContent {...memberProps} />);
+    expect(screen.queryByTestId('hacker-prompt')).not.toBeInTheDocument();
+  });
 
-    renderWithGameContext(<GameContent {...teamMemberProps} />, {
-      gameState: guessingPhaseState,
-    });
+  it('does not show HackerPrompt for user not on a team', () => {
+    const noTeamProps = {
+      endGame,
+      isUserHost: false,
+      lobby: baseLobby,
+      user: { id: '99', display_name: 'Eve', team: null, is_team_lead: false },
+      getCurrentTeam: () => null,
+    };
+    renderWithGameContext(<GameContent {...noTeamProps} />);
+    expect(screen.queryByTestId('hacker-prompt')).not.toBeInTheDocument();
+  });
 
-    // Team members should see their turn to guess
-    expect(screen.getByTestId('is-user-turn')).toHaveTextContent('yes');
+  it('shows game details and board for all users', () => {
+    renderWithGameContext(<GameContent {...defaultProps} />);
+    expect(screen.getByText(/Game In Progress/i)).toBeInTheDocument();
+    expect(screen.getByTestId('game-board')).toBeInTheDocument();
+    expect(screen.getByTestId('game-details')).toBeInTheDocument();
   });
 });

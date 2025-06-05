@@ -63,7 +63,7 @@ const GameContent = ({ endGame, isUserHost, lobby, user, getCurrentTeam }) => {
         />
 
         {/* Team Lead keyword input */}
-        {userTeam && (
+        {userTeam && isUserTeamLead && (
           <HackerPrompt
             gameState={gameState}
             activeTeam={userTeam}
