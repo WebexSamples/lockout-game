@@ -145,6 +145,18 @@ export const GameProvider = ({ children, socket, lobbyId, user }) => {
     [socket, lobbyId, user],
   );
 
+  const handleSubmitGuess = useCallback(
+    (cardIds) => {
+      if (!lobbyId || !user?.id || !socket) return;
+      socket.emit(SOCKET_EVENTS.GAME_SUBMIT_GUESS, {
+        lobby_id: lobbyId,
+        user_id: user.id,
+        card_ids: cardIds,
+      });
+    },
+    [socket, lobbyId, user],
+  );
+
   const handleEndTurn = useCallback(() => {
     if (!lobbyId || !user?.id || !socket) return;
 
@@ -165,6 +177,7 @@ export const GameProvider = ({ children, socket, lobbyId, user }) => {
       notification,
       handleSubmitKeyword,
       handleSelectCard,
+      handleSubmitGuess, // <-- add to context
       handleEndTurn,
       handleCloseNotification,
     }),
@@ -173,6 +186,7 @@ export const GameProvider = ({ children, socket, lobbyId, user }) => {
       notification,
       handleSubmitKeyword,
       handleSelectCard,
+      handleSubmitGuess,
       handleEndTurn,
       handleCloseNotification,
     ],
