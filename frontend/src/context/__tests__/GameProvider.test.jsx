@@ -317,47 +317,6 @@ describe('GameProvider', () => {
     );
   });
 
-  it('emits GAME_SUBMIT_GUESS event when handleSelectCard is called', async () => {
-    const TestConsumer = () => {
-      const context = React.useContext(GameContext);
-      return (
-        <button
-          data-testid="select-card"
-          onClick={() => context.handleSelectCard(5)}
-        >
-          Select Card
-        </button>
-      );
-    };
-
-    await act(async () => {
-      render(
-        <GameProvider
-          socket={mockSocket}
-          lobbyId="test-lobby"
-          user={{ id: 'user-123', display_name: 'Test User' }}
-        >
-          <TestConsumer />
-        </GameProvider>,
-      );
-    });
-
-    // Click select card button
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('select-card'));
-    });
-
-    // Check that socket.emit was called with correct event and data
-    expect(mockSocketEmit).toHaveBeenCalledWith(
-      SOCKET_EVENTS.GAME_SUBMIT_GUESS,
-      {
-        lobby_id: 'test-lobby',
-        user_id: 'user-123',
-        card_ids: [5],
-      },
-    );
-  });
-
   it('emits GAME_END_TURN event when handleEndTurn is called', async () => {
     const TestConsumer = () => {
       const context = React.useContext(GameContext);
@@ -460,12 +419,6 @@ describe('GameProvider', () => {
           >
             Submit Keyword
           </button>
-          <button
-            data-testid="select-card"
-            onClick={() => context.handleSelectCard(3)}
-          >
-            Select Card
-          </button>
           <button data-testid="end-turn" onClick={context.handleEndTurn}>
             End Turn
           </button>
@@ -488,7 +441,6 @@ describe('GameProvider', () => {
     // Clicking buttons shouldn't cause errors when socket is null
     await act(async () => {
       fireEvent.click(screen.getByTestId('submit-keyword'));
-      fireEvent.click(screen.getByTestId('select-card'));
       fireEvent.click(screen.getByTestId('end-turn'));
     });
 

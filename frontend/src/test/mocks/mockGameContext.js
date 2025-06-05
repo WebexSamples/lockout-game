@@ -36,7 +36,6 @@ export const createMockGameContext = (overrides = {}) => ({
   gameState: createMockGameState(),
   notification: null,
   handleSubmitKeyword: vi.fn(),
-  handleSelectCard: vi.fn(),
   handleEndTurn: vi.fn(),
   handleCloseNotification: vi.fn(),
   ...overrides,
