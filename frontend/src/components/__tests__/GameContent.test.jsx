@@ -51,10 +51,34 @@ describe('GameContent', () => {
     id: 'lobby1',
     lobby_name: 'Test Lobby',
     participants: [
-      { id: '1', display_name: 'Alice', is_host: true, is_team_lead: true, team: 'red' },
-      { id: '2', display_name: 'Bob', is_host: false, is_team_lead: false, team: 'red' },
-      { id: '3', display_name: 'Charlie', is_host: false, is_team_lead: true, team: 'blue' },
-      { id: '4', display_name: 'Dana', is_host: false, is_team_lead: false, team: 'blue' },
+      {
+        id: '1',
+        display_name: 'Alice',
+        is_host: true,
+        is_team_lead: true,
+        team: 'red',
+      },
+      {
+        id: '2',
+        display_name: 'Bob',
+        is_host: false,
+        is_team_lead: false,
+        team: 'red',
+      },
+      {
+        id: '3',
+        display_name: 'Charlie',
+        is_host: false,
+        is_team_lead: true,
+        team: 'blue',
+      },
+      {
+        id: '4',
+        display_name: 'Dana',
+        is_host: false,
+        is_team_lead: false,
+        team: 'blue',
+      },
     ],
     game_in_progress: true,
   };
@@ -133,12 +157,27 @@ describe('GameContent', () => {
     };
     const leadProps = {
       ...defaultProps,
-      user: { id: 'lead-id', display_name: 'Lead', team: TEAMS.TEAM1, is_team_lead: true },
+      user: {
+        id: 'lead-id',
+        display_name: 'Lead',
+        team: TEAMS.TEAM1,
+        is_team_lead: true,
+      },
       lobby: {
         ...defaultProps.lobby,
         participants: [
-          { id: 'user-id', display_name: 'Regular User', team: TEAMS.TEAM1, is_team_lead: false },
-          { id: 'lead-id', display_name: 'Lead', team: TEAMS.TEAM1, is_team_lead: true },
+          {
+            id: 'user-id',
+            display_name: 'Regular User',
+            team: TEAMS.TEAM1,
+            is_team_lead: false,
+          },
+          {
+            id: 'lead-id',
+            display_name: 'Lead',
+            team: TEAMS.TEAM1,
+            is_team_lead: true,
+          },
         ],
       },
       getCurrentTeam: () => TEAMS.TEAM1,
@@ -153,12 +192,27 @@ describe('GameContent', () => {
     const handleSubmitKeyword = vi.fn();
     const leadProps = {
       ...defaultProps,
-      user: { id: 'lead-id', display_name: 'Lead', team: TEAMS.TEAM1, is_team_lead: true },
+      user: {
+        id: 'lead-id',
+        display_name: 'Lead',
+        team: TEAMS.TEAM1,
+        is_team_lead: true,
+      },
       lobby: {
         ...defaultProps.lobby,
         participants: [
-          { id: 'user-id', display_name: 'Regular User', team: TEAMS.TEAM1, is_team_lead: false },
-          { id: 'lead-id', display_name: 'Lead', team: TEAMS.TEAM1, is_team_lead: true },
+          {
+            id: 'user-id',
+            display_name: 'Regular User',
+            team: TEAMS.TEAM1,
+            is_team_lead: false,
+          },
+          {
+            id: 'lead-id',
+            display_name: 'Lead',
+            team: TEAMS.TEAM1,
+            is_team_lead: true,
+          },
         ],
       },
       getCurrentTeam: () => TEAMS.TEAM1,
