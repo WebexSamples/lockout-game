@@ -20,6 +20,8 @@ LOBBY_END_GAME = "lobby:end_game"
 GAME_UPDATE = "game:update"               # Sends updated game state
 GAME_SUBMIT_KEYWORD = "game:submit_keyword" # Team lead submits keyword and count
 GAME_SUBMIT_GUESS = "game:submit_guess"   # Team members submit their card guesses
+GAME_SELECT_CARD = "game:select_card"     # Team member selects/deselects a card
+GAME_CARD_SELECTION_UPDATE = "game:card_selection_update" # Broadcast card selection changes
 GAME_ERROR = "game:error"                 # Game-related errors
 
 # Game card types

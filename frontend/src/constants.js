@@ -20,6 +20,8 @@ export const SOCKET_EVENTS = {
   GAME_LEAVE: 'leave_game',
   GAME_SUBMIT_KEYWORD: 'game:submit_keyword',
   GAME_SUBMIT_GUESS: 'game:submit_guess',
+  GAME_SELECT_CARD: 'game:select_card',
+  GAME_CARD_SELECTION_UPDATE: 'game:card_selection_update',
   GAME_END_TURN: 'end_turn',
 };
 

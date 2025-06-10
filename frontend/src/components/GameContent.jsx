@@ -60,6 +60,7 @@ const GameContent = ({ endGame, isUserHost, lobby, user, getCurrentTeam }) => {
           userTeam={userTeam}
           activeKeyword={gameState.activeKeyword}
           isUserTurn={isUserTurn && isTeamGuessingPhase && isTeamMember}
+          user={user}
         />
 
         {/* Team Lead keyword input */}
