@@ -7,6 +7,8 @@ from ..constants import (
     GAME_UPDATE,
     GAME_SUBMIT_KEYWORD,
     GAME_SUBMIT_GUESS,
+    GAME_SELECT_CARD,
+    GAME_CARD_SELECTION_UPDATE,
     FIELD_IS_TEAM_LEAD,
     FIELD_TEAM,
 )
@@ -17,7 +19,8 @@ from ..utils.game import (
     get_sanitized_game_state,
     submit_keyword,
     submit_guess,
-    end_turn
+    end_turn,
+    handle_card_selection
 )
 
 
@@ -227,3 +230,58 @@ def register_game_socket_handlers(socketio):
         
         # Send updated game state to all players
         send_game_update(lobby_id, game_state, lobby['participants'])
+    
+    @socketio.on(GAME_SELECT_CARD)
+    def handle_select_card(data):
+        """Handle team member selecting/deselecting a card"""
+        lobby_id = data.get('lobby_id')
+        user_id = data.get('user_id')
+        card_id = data.get('card_id')
+        is_selected = data.get('is_selected', True)
+        
+        if not lobby_id or not user_id or card_id is None:
+            emit(GAME_ERROR, {"message": "Invalid card selection data"})
+            return
+            
+        # Get the game state
+        game_state = get_game(lobby_id)
+        if not game_state:
+            emit(GAME_ERROR, {"message": "Game not found"})
+            return
+            
+        # Get the lobby data
+        lobbies = get_lobbies()
+        if lobby_id not in lobbies:
+            emit(GAME_ERROR, {"message": "Lobby not found"})
+            return
+            
+        lobby = lobbies[lobby_id]
+        
+        # Verify the user is on the active team but is not a team lead
+        user_participant = next((p for p in lobby['participants'] if p['id'] == user_id), None)
+        if not user_participant:
+            emit(GAME_ERROR, {"message": "User not found in lobby"})
+            return
+            
+        user_team = user_participant.get(FIELD_TEAM)
+        is_team_lead = user_participant.get(FIELD_IS_TEAM_LEAD, False)
+        
+        if user_team != game_state['active_team'] or is_team_lead:
+            emit(GAME_ERROR, {"message": "Only team members on the active team can select cards"})
+            return
+        
+        # Handle the card selection
+        success = handle_card_selection(game_state, user_id, card_id, is_selected)
+        
+        if not success:
+            emit(GAME_ERROR, {"message": "Invalid card selection"})
+            return
+        
+        # Broadcast the card selection update to all players in the lobby
+        emit(GAME_CARD_SELECTION_UPDATE, {
+            "selected_cards": game_state.get("selected_cards", {}),
+            "user_id": user_id,
+            "card_id": card_id,
+            "is_selected": is_selected,
+            "user_name": user_participant.get('display_name', 'Unknown')
+        }, room=lobby_id)

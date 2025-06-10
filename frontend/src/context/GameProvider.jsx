@@ -17,6 +17,7 @@ export const GameProvider = ({ children, socket, lobbyId, user }) => {
       [TEAMS.TEAM1]: { remainingCards: 0 },
       [TEAMS.TEAM2]: { remainingCards: 0 },
     },
+    selectedCards: {}, // Tracks real-time card selections: {user_id: [card_ids]}
     winner: null,
   });
   const [notification, setNotification] = useState(null);
@@ -51,6 +52,7 @@ export const GameProvider = ({ children, socket, lobbyId, user }) => {
                 updatedGameState.team_data?.[TEAMS.TEAM2]?.remaining_cards || 0,
             },
           },
+          selectedCards: updatedGameState.selected_cards || {},
           gameStartedAt: updatedGameState.game_started_at,
           roundNumber: updatedGameState.round_number,
           winner: updatedGameState.winner,
@@ -86,6 +88,15 @@ export const GameProvider = ({ children, socket, lobbyId, user }) => {
         });
       });
 
+      // Handle real-time card selection updates
+      socket.on(SOCKET_EVENTS.GAME_CARD_SELECTION_UPDATE, (selectionData) => {
+        console.log('Received card selection update:', selectionData);
+        setGameState((prevState) => ({
+          ...prevState,
+          selectedCards: selectionData.selected_cards || {},
+        }));
+      });
+
       // Join game when component mounts
       if (lobbyId && user?.id) {
         console.log(`Joining game for lobby: ${lobbyId}`);
@@ -99,6 +110,7 @@ export const GameProvider = ({ children, socket, lobbyId, user }) => {
       return () => {
         socket.off(SOCKET_EVENTS.GAME_UPDATE);
         socket.off(SOCKET_EVENTS.GAME_ERROR);
+        socket.off(SOCKET_EVENTS.GAME_CARD_SELECTION_UPDATE);
 
         if (lobbyId && user?.id) {
           socket.emit(SOCKET_EVENTS.GAME_LEAVE, {
@@ -153,6 +165,20 @@ export const GameProvider = ({ children, socket, lobbyId, user }) => {
     });
   }, [socket, lobbyId, user]);
 
+  const handleCardSelection = useCallback(
+    (cardId, isSelected) => {
+      if (!lobbyId || !user?.id || !socket) return;
+
+      socket.emit(SOCKET_EVENTS.GAME_SELECT_CARD, {
+        lobby_id: lobbyId,
+        user_id: user.id,
+        card_id: cardId,
+        is_selected: isSelected,
+      });
+    },
+    [socket, lobbyId, user],
+  );
+
   const handleCloseNotification = useCallback(() => {
     setNotification(null);
   }, []);
@@ -163,8 +189,9 @@ export const GameProvider = ({ children, socket, lobbyId, user }) => {
       gameState,
       notification,
       handleSubmitKeyword,
-      handleSubmitGuess, // <-- add to context
+      handleSubmitGuess,
       handleEndTurn,
+      handleCardSelection,
       handleCloseNotification,
     }),
     [
@@ -173,6 +200,7 @@ export const GameProvider = ({ children, socket, lobbyId, user }) => {
       handleSubmitKeyword,
       handleSubmitGuess,
       handleEndTurn,
+      handleCardSelection,
       handleCloseNotification,
     ],
   );

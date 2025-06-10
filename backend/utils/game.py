@@ -50,7 +50,8 @@ def create_game(lobby_id):
         "active_keyword": None,
         "board": board,
         "game_over": False,
-        "winner": None
+        "winner": None,
+        "selected_cards": {}  # Tracks real-time card selections: {user_id: [card_ids]}
     }
     
     active_games[lobby_id] = game_state
@@ -159,7 +160,8 @@ def get_sanitized_game_state(game_state, user_id, participants):
         "active_keyword": game_state["active_keyword"],
         "game_over": game_state["game_over"],
         "winner": game_state["winner"],
-        "board": sanitized_board
+        "board": sanitized_board,
+        "selected_cards": game_state.get("selected_cards", {})
     }
     
     return sanitized
@@ -289,5 +291,35 @@ def end_turn(game_state):
     # Increment round number if needed
     if game_state["active_team"] == TEAM1:
         game_state["round_number"] += 1
+    
+    return True
+
+
+def handle_card_selection(game_state, user_id, card_id, is_selected):
+    """Handle a team member selecting or deselecting a card"""
+    if not game_state or game_state.get("game_over", False):
+        return False
+    
+    if game_state["game_phase"] != "team_guessing":
+        return False
+    
+    # Initialize selected_cards if it doesn't exist
+    if "selected_cards" not in game_state:
+        game_state["selected_cards"] = {}
+    
+    # Initialize user's selections if they don't exist
+    if user_id not in game_state["selected_cards"]:
+        game_state["selected_cards"][user_id] = []
+    
+    user_selections = game_state["selected_cards"][user_id]
+    
+    if is_selected:
+        # Add card to user's selections if not already selected
+        if card_id not in user_selections:
+            user_selections.append(card_id)
+    else:
+        # Remove card from user's selections
+        if card_id in user_selections:
+            user_selections.remove(card_id)
     
     return True

@@ -28,6 +28,7 @@ const GameTile = ({
   isUserTurn,
   onCardSelect,
   selected,
+  otherPlayersSelections,
 }) => {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
@@ -70,11 +71,21 @@ const GameTile = ({
     }
   };
 
-  // Define border for the card if it's visible to the team lead
+  // Define border for the card
   const getCardBorder = () => {
-    // If card is selected by team member during their turn
-    if (selected && !card.revealed) {
-      return `2px solid ${isDarkMode ? '#ff9800' : '#ed6c02'}`;
+    // If card is selected by current user during their turn (only for team members, not hackers)
+    if (selected && !card.revealed && !isTeamLead) {
+      return `3px solid ${isDarkMode ? '#ff9800' : '#ed6c02'}`;
+    }
+
+    // If other players have selected this card, show a different border (only for team members, not hackers)
+    if (
+      otherPlayersSelections &&
+      otherPlayersSelections.length > 0 &&
+      !card.revealed &&
+      !isTeamLead
+    ) {
+      return `2px dashed ${isDarkMode ? '#9c27b0' : '#673ab7'}`;
     }
 
     // If card type is visible to the team lead
@@ -101,31 +112,59 @@ const GameTile = ({
   const isSelectable = isTeamMember && isUserTurn && !card.revealed;
 
   return (
-    <Paper
-      elevation={3}
-      onClick={() => isSelectable && onCardSelect(card.id)}
-      sx={{
-        height: 80,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        bgcolor: colors.bgcolor,
-        color: colors.color,
-        border: border,
-        cursor: isSelectable ? 'pointer' : 'default',
-        transition: 'all 0.2s ease',
-        '&:hover': isSelectable
-          ? {
-              transform: 'translateY(-2px)',
-              boxShadow: 6,
-            }
-          : {},
-      }}
-    >
-      <Typography variant="body1" align="center" fontWeight="medium">
-        {card.word}
-      </Typography>
-    </Paper>
+    <Box sx={{ position: 'relative' }}>
+      <Paper
+        elevation={3}
+        onClick={() => isSelectable && onCardSelect(card.id)}
+        sx={{
+          height: 80,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: colors.bgcolor,
+          color: colors.color,
+          border: border,
+          cursor: isSelectable ? 'pointer' : 'default',
+          transition: 'all 0.2s ease',
+          '&:hover': isSelectable
+            ? {
+                transform: 'translateY(-2px)',
+                boxShadow: 6,
+              }
+            : {},
+        }}
+      >
+        <Typography variant="body1" align="center" fontWeight="medium">
+          {card.word}
+        </Typography>
+      </Paper>
+
+      {/* Show indicator if other players have selected this card */}
+      {otherPlayersSelections &&
+        otherPlayersSelections.length > 0 &&
+        !card.revealed && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: -8,
+              right: -8,
+              bgcolor: isDarkMode ? '#9c27b0' : '#673ab7',
+              color: 'white',
+              borderRadius: '50%',
+              width: 20,
+              height: 20,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.75rem',
+              fontWeight: 'bold',
+              zIndex: 1,
+            }}
+          >
+            {otherPlayersSelections.length}
+          </Box>
+        )}
+    </Box>
   );
 };
 
@@ -141,15 +180,17 @@ GameTile.propTypes = {
   isUserTurn: PropTypes.bool.isRequired,
   onCardSelect: PropTypes.func.isRequired,
   selected: PropTypes.bool.isRequired,
+  otherPlayersSelections: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 /**
  * Game Board component that displays a grid of word tiles
  */
 const GameBoard = forwardRef(
-  ({ isUserTeamLead, userTeam, isUserTurn }, ref) => {
+  ({ isUserTeamLead, userTeam, isUserTurn, user }, ref) => {
     const theme = useTheme();
-    const { gameState, handleSubmitGuess } = useGameContext();
+    const { gameState, handleSubmitGuess, handleCardSelection } =
+      useGameContext();
     const [boardData, setBoardData] = useState(gameState?.board || []);
     const [selectedCards, setSelectedCards] = useState([]);
     const isTeamMember = userTeam && !isUserTeamLead;
@@ -188,21 +229,29 @@ const GameBoard = forwardRef(
     // Handle card selection by team members
     const handleCardSelect = (cardId) => {
       setSelectedCards((prev) => {
+        const isCurrentlySelected = prev.includes(cardId);
+        let newSelections;
+
         // If already selected, deselect it
-        if (prev.includes(cardId)) {
-          return prev.filter((id) => id !== cardId);
+        if (isCurrentlySelected) {
+          newSelections = prev.filter((id) => id !== cardId);
+        } else {
+          // If we've already selected the maximum number of cards (based on keyword)
+          // remove the first selected card and add this new one
+          if (activeKeyword && prev.length >= activeKeyword.count) {
+            const updatedSelections = [...prev];
+            updatedSelections.shift(); // Remove the first (oldest) selection
+            newSelections = [...updatedSelections, cardId];
+          } else {
+            // Otherwise add this card to selections
+            newSelections = [...prev, cardId];
+          }
         }
 
-        // If we've already selected the maximum number of cards (based on keyword)
-        // remove the first selected card and add this new one
-        if (activeKeyword && prev.length >= activeKeyword.count) {
-          const newSelections = [...prev];
-          newSelections.shift(); // Remove the first (oldest) selection
-          return [...newSelections, cardId];
-        }
+        // Emit real-time card selection to other players
+        handleCardSelection(cardId, !isCurrentlySelected);
 
-        // Otherwise add this card to selections
-        return [...prev, cardId];
+        return newSelections;
       });
     };
 
@@ -260,18 +309,31 @@ const GameBoard = forwardRef(
         </Box>
 
         <Grid container spacing={2}>
-          {boardData.map((card) => (
-            <Grid item xs={3} key={card.id}>
-              <GameTile
-                card={card}
-                isTeamLead={isUserTeamLead}
-                isTeamMember={isTeamMember}
-                isUserTurn={isUserTurn}
-                onCardSelect={handleCardSelect}
-                selected={selectedCards.includes(card.id)}
-              />
-            </Grid>
-          ))}
+          {boardData.map((card) => {
+            // Get other players who have selected this card (excluding current user)
+            const otherPlayersSelections = Object.entries(
+              gameState?.selectedCards || {},
+            )
+              .filter(
+                ([userId, selectedCardIds]) =>
+                  userId !== user?.id && selectedCardIds.includes(card.id),
+              )
+              .map(([userId]) => userId);
+
+            return (
+              <Grid item xs={3} key={card.id}>
+                <GameTile
+                  card={card}
+                  isTeamLead={isUserTeamLead}
+                  isTeamMember={isTeamMember}
+                  isUserTurn={isUserTurn}
+                  onCardSelect={handleCardSelect}
+                  selected={selectedCards.includes(card.id)}
+                  otherPlayersSelections={otherPlayersSelections}
+                />
+              </Grid>
+            );
+          })}
         </Grid>
 
         {/* Legend for hackers */}
@@ -356,6 +418,9 @@ GameBoard.propTypes = {
   isUserTeamLead: PropTypes.bool.isRequired,
   userTeam: PropTypes.string,
   isUserTurn: PropTypes.bool.isRequired,
+  user: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+  }),
 };
 
 GameBoard.displayName = 'GameBoard';
