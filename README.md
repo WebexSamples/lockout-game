@@ -199,6 +199,94 @@ Optionally, the **Game Host** can use **Force Start** (bypasses balance check bu
 
 ---
 
+## 🚀 Deployment
+
+The Lockout Game is designed for deployment on AWS using a split architecture:
+
+- **Backend (Flask + Socket.IO)**: AWS ECS Fargate with Application Load Balancer
+- **Frontend (React)**: AWS Amplify with CloudFront CDN
+
+### Deployment Architecture
+
+```
+┌─────────────┐
+│   Users     │
+└──────┬──────┘
+       │ HTTPS
+       │
+┌──────▼────────┐
+│  AWS Amplify  │
+│   Frontend    │
+│  CloudFront   │
+└──────┬────────┘
+       │ API/WebSocket
+       │ HTTPS
+       │
+┌──────▼─────────┐
+│   ALB (HTTPS)  │
+│   Backend API  │
+└──────┬─────────┘
+       │
+┌──────▼────────┐
+│  ECS Fargate  │
+│  Flask Tasks  │
+└───────────────┘
+```
+
+### Quick Start Deployment
+
+1. **Deploy Backend to ECS Fargate**
+
+   - See [AWS Backend Deployment Guide](docs/aws-backend-deployment.md)
+   - Estimated setup time: 30-60 minutes
+
+2. **Deploy Frontend to Amplify**
+
+   - See [AWS Frontend Deployment Guide](docs/aws-frontend-deployment.md)
+   - Estimated setup time: 15-30 minutes
+
+3. **Troubleshooting**
+   - See [Deployment Troubleshooting Guide](docs/deployment-troubleshooting.md)
+
+### Local Testing with Docker
+
+Test the backend in a production-like environment:
+
+```bash
+# Build and run backend container
+docker-compose up --build
+
+# Backend available at http://localhost:5000
+# Test health: curl http://localhost:5000/health
+```
+
+### CI/CD
+
+Automated deployments are configured via GitHub Actions:
+
+- **Backend**: Deploys to ECS on changes to `backend/` directory
+- **Frontend**: Deploys to Amplify on changes to `frontend/` directory
+
+See `.github/workflows/` for workflow configurations.
+
+### Environment Variables
+
+**Backend** (AWS Secrets Manager):
+
+- `FLASK_ENV` - Application environment (production)
+- `SECRET_KEY` - Flask secret key (generate securely)
+- `FRONTEND_URL` - Frontend domain for CORS
+- `ALLOWED_ORIGINS` - Comma-separated list of allowed origins
+
+**Frontend** (AWS Amplify Environment Variables):
+
+- `VITE_API_URL` - Backend API URL
+- `VITE_SOCKET_URL` - Backend WebSocket URL
+
+See `env.template` and `backend/env.production.template` for examples.
+
+---
+
 ## 📜 Contribution Notes
 
 - Use `Grid2` from `@mui/material` with the `size={{ xs, sm }}` prop.

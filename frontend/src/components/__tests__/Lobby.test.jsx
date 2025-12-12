@@ -5,6 +5,15 @@ import { screen } from '@testing-library/react';
 import Lobby from '../Lobby';
 import { renderWithRouter } from '../../test/testUtils';
 
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+global.localStorage = localStorageMock;
+
 vi.mock('../LobbyContent', () => ({
   default: () => (
     <div data-testid="mock-lobby-content">Lobby Content Rendered</div>
@@ -14,6 +23,7 @@ vi.mock('../LobbyContent', () => ({
 describe('Lobby', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorageMock.getItem.mockReturnValue(null);
   });
 
   it('renders LobbyContent inside LobbyProvider when initialUser is provided', () => {

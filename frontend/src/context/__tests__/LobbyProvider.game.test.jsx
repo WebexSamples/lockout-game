@@ -6,6 +6,15 @@ import { LobbyProvider } from '../LobbyProvider';
 import { LobbyContext } from '../LobbyContext';
 import { SOCKET_EVENTS } from '../../constants';
 
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+global.localStorage = localStorageMock;
+
 // Create mock socket
 const mockSocketOn = vi.fn();
 const mockSocketOff = vi.fn();
@@ -36,6 +45,7 @@ describe('LobbyProvider Game Events', () => {
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks();
+    localStorageMock.getItem.mockReturnValue(null);
 
     // Update on method to store event handlers
     mockSocketOn.mockImplementation((event, handler) => {
