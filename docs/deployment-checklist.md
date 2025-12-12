@@ -397,10 +397,10 @@ If any step fails, refer to:
 
 ## Sign-Off
 
-Deployment completed by: ********\_\_\_********
-Date: ********\_\_\_********
-Backend URL: ********\_\_\_********
-Frontend URL: ********\_\_\_********
-Verified by: ********\_\_\_********
+Deployment completed by: **\*\*\*\***\_\_\_**\*\*\*\***
+Date: **\*\*\*\***\_\_\_**\*\*\*\***
+Backend URL: **\*\*\*\***\_\_\_**\*\*\*\***
+Frontend URL: **\*\*\*\***\_\_\_**\*\*\*\***
+Verified by: **\*\*\*\***\_\_\_**\*\*\*\***
 
 🎉 **Congratulations! Your Lockout Game is live on AWS!** 🎉
