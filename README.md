@@ -21,6 +21,115 @@ Only one team will breach the vault. Will you outsmart the AI, or fall into its 
 
 ---
 
+## 🚀 Getting Started
+
+### Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Node.js** (v20 LTS recommended - see `.nvmrc`) and **npm**
+- **Python** (v3.12 or higher)
+- **Git**
+
+> **Note:** If you use [nvm](https://github.com/nvm-sh/nvm), simply run `nvm use` in the project root to switch to the correct Node version.
+
+### Installation
+
+1. **Clone the repository**
+
+```bash
+git clone <repository-url>
+cd lockout-game
+```
+
+2. **Set up the Backend**
+
+```bash
+cd backend
+
+# Create a virtual environment
+python3 -m venv venv
+
+# Activate the virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+# venv\Scripts\activate
+
+# Install Python dependencies
+pip install -r requirements.txt
+```
+
+3. **Set up the Frontend**
+
+```bash
+cd ../frontend
+
+# Install Node dependencies
+npm install
+```
+
+### Configuration
+
+Create a `.env` file in the `backend` directory with the following variables:
+
+```bash
+FLASK_ENV=development
+SECRET_KEY=your-secret-key-here
+# Add any other required environment variables
+```
+
+### Running the Application
+
+You'll need to run both the backend and frontend servers:
+
+1. **Start the Backend Server**
+
+```bash
+# From the project root directory
+source backend/venv/bin/activate  # Activate virtual environment
+python -m backend.app
+```
+
+The backend server will start on `http://localhost:5000`
+
+> **Note:** The backend must be run as a module from the project root using `python -m backend.app` due to relative imports.
+
+2. **Start the Frontend Development Server**
+
+In a new terminal:
+
+```bash
+cd frontend
+npm run dev
+```
+
+The frontend will start on `http://localhost:5173`
+
+3. **Access the Application**
+
+Open your browser and navigate to `http://localhost:5173`
+
+### Running Tests
+
+**Frontend Tests:**
+
+```bash
+cd frontend
+npm test                    # Run tests in watch mode
+npm run test:coverage       # Run tests with coverage report
+```
+
+**Backend Tests:**
+
+```bash
+cd backend
+source venv/bin/activate
+pytest
+```
+
+---
+
 ## 🧩 Architecture Overview
 
 This frontend is a **Vite + React application** using:
