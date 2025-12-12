@@ -20,7 +20,13 @@ export const LobbyProvider = ({ lobbyId, initialUser, children }) => {
   });
 
   const socket = useMemo(
-    () => io(import.meta.env.VITE_SOCKET_URL, { transports: ['websocket'] }),
+    () =>
+      io(import.meta.env.VITE_SOCKET_URL, {
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5,
+      }),
     [],
   );
 
