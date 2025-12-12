@@ -229,8 +229,8 @@ Now that you know your Amplify URLs, update the backend CORS configuration:
 
 **Note:** The `https://*.amplifyapp.com` wildcard allows:
 
-- Your main Amplify URL: `https://main.d16sx389cvyqhv.amplifyapp.com`
-- All PR preview URLs: `https://pr-123.d16sx389cvyqhv.amplifyapp.com`
+- Your main Amplify URL: `https://main.d1234567890abc.amplifyapp.com`
+- All PR preview URLs: `https://pr-123.d1234567890abc.amplifyapp.com`
 
 4. Restart your ECS service to pick up the new configuration:
 
