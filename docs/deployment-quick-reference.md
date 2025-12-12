@@ -256,6 +256,7 @@ aws ecs update-service \
 ### Frontend Rollback
 
 Use Amplify Console:
+
 1. Go to https://console.aws.amazon.com/amplify/
 2. Select app → branch
 3. Click on previous successful deployment
@@ -331,11 +332,13 @@ arn:aws:secretsmanager:<region>:<account-id>:secret:lockout-game/production
 Set these in GitHub repository settings → Secrets and variables → Actions:
 
 ### Secrets
+
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 - `AMPLIFY_APP_ID`
 
 ### Variables (optional)
+
 - `AWS_REGION` (default: us-east-1)
 - `AMPLIFY_BRANCH_NAME` (default: main)
 
@@ -366,4 +369,3 @@ npm run dev
 - AWS Documentation: https://docs.aws.amazon.com/
 - AWS Support: https://console.aws.amazon.com/support/
 - Project Issues: https://github.com/your-repo/lockout-game/issues
-

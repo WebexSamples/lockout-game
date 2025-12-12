@@ -5,6 +5,7 @@ This guide covers deploying the Lockout Game backend (Flask + Socket.IO) to AWS 
 ## Architecture Overview
 
 The backend runs as a containerized Flask application with:
+
 - **Gunicorn** as the WSGI server with eventlet worker for WebSocket support
 - **Flask + Flask-SocketIO** for REST API and real-time communication
 - **ECS Fargate** for serverless container orchestration
@@ -52,6 +53,7 @@ Note at least 2 subnet IDs in different availability zones.
 ### Option B: Create New VPC (Recommended for Production)
 
 Use AWS VPC wizard or CloudFormation to create:
+
 - VPC with CIDR block (e.g., 10.0.0.0/16)
 - 2+ public subnets in different AZs
 - Internet Gateway attached to VPC
@@ -307,7 +309,10 @@ Create a file `task-definition.json`:
         }
       },
       "healthCheck": {
-        "command": ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"],
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:5000/health || exit 1"
+        ],
         "interval": 30,
         "timeout": 10,
         "retries": 3,
@@ -398,11 +403,13 @@ The GitHub Actions workflow will now automatically deploy on pushes to main.
 ## Verification
 
 1. Check ECS service status:
+
    ```bash
    aws ecs describe-services --cluster lockout-game-cluster --services lockout-game-service
    ```
 
 2. Test health endpoint:
+
    ```bash
    curl https://api.yourdomain.com/health
    ```
@@ -418,4 +425,3 @@ The GitHub Actions workflow will now automatically deploy on pushes to main.
 - Configure auto-scaling policies
 - Set up AWS WAF for DDoS protection (optional)
 - Enable ECS Exec for debugging running containers
-

@@ -22,37 +22,42 @@ This guide covers common issues and solutions for the Lockout Game deployment on
 **Possible Causes**:
 
 1. **Health check failures**
+
    ```bash
    # Check service events
    aws ecs describe-services --cluster lockout-game-cluster --services lockout-game-service \
      --query 'services[0].events[0:10]'
-   
+
    # Check task logs
    aws logs tail /ecs/lockout-game --follow
    ```
-   
+
    **Solution**: Verify `/health` endpoint is accessible:
+
    ```bash
    # Test health endpoint
    curl https://api.yourdomain.com/health
    ```
 
 2. **Port mismatch**
+
    - Task definition has port 5000
    - Container must EXPOSE 5000
    - Target group must target port 5000
-   
+
    **Solution**: Verify all ports match in task definition and target group
 
 3. **Environment variable issues**
+
    ```bash
    # Check secrets are accessible
    aws secretsmanager get-secret-value --secret-id lockout-game/production
    ```
-   
+
    **Solution**: Ensure execution role has `secretsmanager:GetSecretValue` permission
 
 4. **Docker image issues**
+
    ```bash
    # Test image locally
    docker run -p 5000:5000 \
@@ -61,7 +66,7 @@ This guide covers common issues and solutions for the Lockout Game deployment on
      -e FRONTEND_URL=http://localhost \
      -e ALLOWED_ORIGINS=http://localhost \
      <ecr-uri>:latest
-   
+
    # Then test health endpoint
    curl http://localhost:5000/health
    ```
@@ -84,6 +89,7 @@ aws iam get-role-policy --role-name lockout-ecs-execution-role --policy-name ECR
 ```
 
 Ensure execution role has these permissions:
+
 ```json
 {
   "Version": "2012-10-17",
@@ -134,6 +140,7 @@ aws elbv2 describe-target-health --target-group-arn <target-group-arn>
 ```
 
 **Common causes**:
+
 - Health check path incorrect (should be `/health`)
 - Backend not listening on correct port
 - Security group blocking traffic from ALB to ECS tasks
@@ -144,7 +151,8 @@ aws elbv2 describe-target-health --target-group-arn <target-group-arn>
 
 **504 Gateway Timeout**: Request taking too long
 
-**Solution**: 
+**Solution**:
+
 - Check backend logs for slow queries/operations
 - Increase timeout in target group settings
 - Check network connectivity
@@ -158,6 +166,7 @@ aws elbv2 describe-target-health --target-group-arn <target-group-arn>
 **Problem**: Amplify build fails
 
 **Check build logs**:
+
 1. Go to Amplify Console
 2. Select your app → branch
 3. Click on failed deployment
@@ -166,8 +175,9 @@ aws elbv2 describe-target-health --target-group-arn <target-group-arn>
 **Common issues**:
 
 1. **Node version mismatch**
-   
+
    Add to `frontend/amplify.yml`:
+
    ```yaml
    frontend:
      phases:
@@ -178,14 +188,16 @@ aws elbv2 describe-target-health --target-group-arn <target-group-arn>
    ```
 
 2. **Missing environment variables**
-   
+
    Verify in Amplify Console → Environment variables:
+
    - `VITE_API_URL`
    - `VITE_SOCKET_URL`
 
 3. **Build command fails**
-   
+
    Test locally:
+
    ```bash
    cd frontend
    npm ci
@@ -193,16 +205,18 @@ aws elbv2 describe-target-health --target-group-arn <target-group-arn>
    ```
 
 4. **Wrong artifacts directory**
-   
+
    Ensure `amplify.yml` has:
+
    ```yaml
    artifacts:
-     baseDirectory: dist  # Vite outputs to dist/
+     baseDirectory: dist # Vite outputs to dist/
    ```
 
 ### Frontend Loads but API Calls Fail
 
 **Check browser console**:
+
 1. Open browser DevTools (F12)
 2. Look for network errors
 3. Check API request URLs
@@ -210,8 +224,9 @@ aws elbv2 describe-target-health --target-group-arn <target-group-arn>
 **Common issues**:
 
 1. **Wrong API URL**
-   
+
    Check `VITE_API_URL` environment variable in Amplify
+
    ```bash
    aws amplify get-app --app-id <app-id>
    ```
@@ -219,8 +234,9 @@ aws elbv2 describe-target-health --target-group-arn <target-group-arn>
 2. **CORS errors** (see [CORS section](#cors-and-connectivity-issues) below)
 
 3. **Backend is down**
-   
+
    Test backend health:
+
    ```bash
    curl https://api.yourdomain.com/health
    ```
@@ -234,29 +250,33 @@ aws elbv2 describe-target-health --target-group-arn <target-group-arn>
 1. **Wait for propagation**: DNS changes take 5-30 minutes
 
 2. **Check domain association status**:
+
    ```bash
    aws amplify get-domain-association --app-id <app-id> --domain-name yourdomain.com
    ```
 
 3. **Verify Route53 records**:
+
    ```bash
    aws route53 list-resource-record-sets --hosted-zone-id <zone-id>
    ```
-   
+
    Should have CNAME records pointing to Amplify
 
 4. **Check certificate status**:
+
    - Go to AWS Console → Certificate Manager
    - Verify certificate is "Issued" (not "Pending validation")
 
 5. **Clear DNS cache**:
+
    ```bash
    # macOS
    sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder
-   
+
    # Linux
    sudo systemd-resolve --flush-caches
-   
+
    # Windows
    ipconfig /flushdns
    ```
@@ -268,6 +288,7 @@ aws elbv2 describe-target-health --target-group-arn <target-group-arn>
 ### Browser Shows CORS Errors
 
 **Symptoms**: Console shows:
+
 ```
 Access to XMLHttpRequest at 'https://api.yourdomain.com/api/lobby' from origin 'https://lockout.yourdomain.com' has been blocked by CORS policy
 ```
@@ -275,12 +296,14 @@ Access to XMLHttpRequest at 'https://api.yourdomain.com/api/lobby' from origin '
 **Diagnosis**:
 
 1. **Check backend CORS configuration**:
+
    ```bash
    # View current secrets
    aws secretsmanager get-secret-value --secret-id lockout-game/production
    ```
 
 2. **Test with curl**:
+
    ```bash
    curl -H "Origin: https://lockout.yourdomain.com" \
         -H "Access-Control-Request-Method: POST" \
@@ -288,8 +311,9 @@ Access to XMLHttpRequest at 'https://api.yourdomain.com/api/lobby' from origin '
         -X OPTIONS \
         https://api.yourdomain.com/api/lobby -v
    ```
-   
+
    Should return:
+
    ```
    Access-Control-Allow-Origin: https://lockout.yourdomain.com
    Access-Control-Allow-Methods: POST, GET, OPTIONS
@@ -298,6 +322,7 @@ Access to XMLHttpRequest at 'https://api.yourdomain.com/api/lobby' from origin '
 **Solutions**:
 
 1. **Update ALLOWED_ORIGINS** in Secrets Manager:
+
    ```json
    {
      "ALLOWED_ORIGINS": "https://lockout.yourdomain.com,https://main.d123456.amplifyapp.com"
@@ -305,6 +330,7 @@ Access to XMLHttpRequest at 'https://api.yourdomain.com/api/lobby' from origin '
    ```
 
 2. **Restart ECS service** to pick up new configuration:
+
    ```bash
    aws ecs update-service \
      --cluster lockout-game-cluster \
@@ -328,7 +354,8 @@ Access to XMLHttpRequest at 'https://api.yourdomain.com/api/lobby' from origin '
 
 ### Socket.IO Connection Fails
 
-**Symptoms**: 
+**Symptoms**:
+
 - Console shows: `WebSocket connection failed`
 - Lobby doesn't update in real-time
 - Players can't see each other
@@ -338,9 +365,10 @@ Access to XMLHttpRequest at 'https://api.yourdomain.com/api/lobby' from origin '
 1. **Check browser console** for Socket.IO errors
 
 2. **Verify WebSocket URL**:
+
    ```javascript
    // In browser console
-   console.log(import.meta.env.VITE_SOCKET_URL)
+   console.log(import.meta.env.VITE_SOCKET_URL);
    ```
 
 3. **Test WebSocket connection**:
@@ -352,13 +380,15 @@ Access to XMLHttpRequest at 'https://api.yourdomain.com/api/lobby' from origin '
 **Common issues**:
 
 1. **ALB doesn't support WebSocket upgrade**
-   
+
    **Solution**: Verify ALB target group has:
+
    - Protocol: HTTP
    - Target type: IP
    - Stickiness: Enabled (important for Socket.IO)
-   
+
    Enable stickiness:
+
    ```bash
    aws elbv2 modify-target-group-attributes \
      --target-group-arn <target-group-arn> \
@@ -366,19 +396,21 @@ Access to XMLHttpRequest at 'https://api.yourdomain.com/api/lobby' from origin '
    ```
 
 2. **Backend not configured for WebSocket**
-   
+
    Verify `backend/app.py` uses eventlet:
+
    ```python
    socketio = SocketIO(app, cors_allowed_origins=app.config.get('ALLOWED_ORIGINS', '*'), async_mode='eventlet')
    ```
-   
+
    And Dockerfile runs with eventlet worker:
+
    ```dockerfile
    CMD ["gunicorn", "--worker-class", "eventlet", ...]
    ```
 
 3. **CORS for Socket.IO**
-   
+
    Socket.IO needs same CORS origins as REST API. Verify `ALLOWED_ORIGINS` is set correctly.
 
 ### Socket.IO Works Intermittently
@@ -398,12 +430,14 @@ Access to XMLHttpRequest at 'https://api.yourdomain.com/api/lobby' from origin '
 **Frontend**:
 
 1. **Check CloudFront caching**:
+
    ```bash
    # View CloudFront distributions
    aws cloudfront list-distributions --query 'DistributionList.Items[*].[Id,DomainName,Status]'
    ```
 
 2. **Analyze bundle size**:
+
    ```bash
    cd frontend
    npm run build -- --mode production
@@ -415,6 +449,7 @@ Access to XMLHttpRequest at 'https://api.yourdomain.com/api/lobby' from origin '
 **Backend**:
 
 1. **Check ECS task performance**:
+
    - View CPU/Memory metrics in CloudWatch
    - Increase task size if needed
 
@@ -429,11 +464,13 @@ Access to XMLHttpRequest at 'https://api.yourdomain.com/api/lobby' from origin '
 ### View Backend Logs
 
 **Real-time logs**:
+
 ```bash
 aws logs tail /ecs/lockout-game --follow
 ```
 
 **Query logs**:
+
 ```bash
 aws logs filter-log-events \
   --log-group-name /ecs/lockout-game \
@@ -519,6 +556,7 @@ aws ecs update-service \
 **Frontend (Amplify)**:
 
 In Amplify Console:
+
 1. Go to app → branch
 2. Click on previous successful deployment
 3. Click "Redeploy this version"
@@ -558,7 +596,6 @@ If you're still stuck:
    - [ECS Troubleshooting](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/troubleshooting.html)
    - [Amplify Troubleshooting](https://docs.aws.amazon.com/amplify/latest/userguide/troubleshooting.html)
 3. **AWS Support**: Open a support ticket in AWS Console
-4. **Community Forums**: 
+4. **Community Forums**:
    - AWS re:Post: https://repost.aws/
    - Stack Overflow with AWS tags
-

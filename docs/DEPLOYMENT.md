@@ -49,30 +49,36 @@ The Lockout Game has been configured for deployment on AWS using a modern, scala
 ## Files Created
 
 ### Docker & Container Configuration
+
 - ✅ `Dockerfile` - Backend-only container (Python + Flask + Gunicorn)
 - ✅ `.dockerignore` - Optimized build context
 - ✅ `docker-compose.yml` - Local testing environment
 
 ### Frontend Configuration
+
 - ✅ `frontend/amplify.yml` - Amplify build specification
 - ✅ `frontend/src/config.js` - Environment-based configuration
 - ✅ `frontend/env.template` - Local development template
 - ✅ `frontend/env.production.template` - Production configuration reference
 
 ### Backend Configuration
+
 - ✅ Updated `backend/app.py` - Health endpoint, CORS configuration
 - ✅ Updated `backend/config.py` - Environment-aware settings
 - ✅ Updated `backend/requirements.txt` - Added gunicorn
 - ✅ `backend/env.production.template` - Production configuration reference
 
 ### Environment Templates
+
 - ✅ `env.template` - Root-level environment template
 
 ### CI/CD Workflows
+
 - ✅ `.github/workflows/deploy.yml` - Backend deployment to ECS
 - ✅ `.github/workflows/deploy-frontend.yml` - Frontend deployment to Amplify
 
 ### Documentation
+
 - ✅ `docs/aws-backend-deployment.md` - Complete ECS Fargate setup guide
 - ✅ `docs/aws-frontend-deployment.md` - Complete Amplify setup guide
 - ✅ `docs/deployment-troubleshooting.md` - Common issues and solutions
@@ -84,6 +90,7 @@ The Lockout Game has been configured for deployment on AWS using a modern, scala
 ### Initial Setup (One-time)
 
 1. **Backend Infrastructure** (~30-60 minutes)
+
    - Follow `docs/aws-backend-deployment.md`
    - Create ECR repository, VPC, security groups, ALB, ECS cluster
    - Configure AWS Secrets Manager
@@ -91,6 +98,7 @@ The Lockout Game has been configured for deployment on AWS using a modern, scala
    - Deploy ECS service
 
 2. **Frontend Infrastructure** (~15-30 minutes)
+
    - Follow `docs/aws-frontend-deployment.md`
    - Connect GitHub repository to Amplify
    - Configure environment variables
@@ -105,12 +113,14 @@ The Lockout Game has been configured for deployment on AWS using a modern, scala
 ### Ongoing Deployments
 
 **Automated** (recommended):
+
 - Push code to `main` branch
 - GitHub Actions automatically builds and deploys
 - Backend changes trigger ECS deployment
 - Frontend changes trigger Amplify deployment
 
 **Manual**:
+
 ```bash
 # Backend
 docker build -t backend .
@@ -137,6 +147,7 @@ Stored in secret: `lockout-game/production`
 ```
 
 **Generate SECRET_KEY**:
+
 ```bash
 python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
@@ -145,14 +156,15 @@ python3 -c "import secrets; print(secrets.token_hex(32))"
 
 Set in Amplify Console → Environment variables:
 
-| Variable | Example Value |
-|----------|---------------|
-| `VITE_API_URL` | `https://api.yourdomain.com` |
+| Variable          | Example Value                |
+| ----------------- | ---------------------------- |
+| `VITE_API_URL`    | `https://api.yourdomain.com` |
 | `VITE_SOCKET_URL` | `https://api.yourdomain.com` |
 
 ## Features
 
 ### Backend (ECS Fargate)
+
 - ✅ Containerized Flask application
 - ✅ Gunicorn with eventlet worker for WebSocket support
 - ✅ Health check endpoint (`/health`)
@@ -163,6 +175,7 @@ Set in Amplify Console → Environment variables:
 - ✅ High availability (multi-AZ deployment)
 
 ### Frontend (Amplify)
+
 - ✅ Global CDN via CloudFront
 - ✅ Automatic HTTPS with free SSL certificates
 - ✅ Git-based deployments
@@ -172,6 +185,7 @@ Set in Amplify Console → Environment variables:
 - ✅ Pull request previews (optional)
 
 ### CI/CD
+
 - ✅ Automated testing before deployment
 - ✅ Separate workflows for backend and frontend
 - ✅ Path-based triggering (only deploy what changed)
@@ -206,6 +220,7 @@ aws logs tail /ecs/lockout-game --follow
 ### Metrics
 
 Available in CloudWatch:
+
 - ECS CPU/Memory utilization
 - ALB request count, latency, errors
 - Target health
@@ -214,6 +229,7 @@ Available in CloudWatch:
 ## Security
 
 ### Best Practices Implemented
+
 - ✅ HTTPS/TLS everywhere
 - ✅ Secrets stored in AWS Secrets Manager (never in code)
 - ✅ Configurable CORS (no wildcard in production)
@@ -223,6 +239,7 @@ Available in CloudWatch:
 - ✅ Container image scanning (ECR)
 
 ### Additional Recommendations
+
 - Enable AWS WAF for DDoS protection
 - Set up CloudTrail for audit logging
 - Enable GuardDuty for threat detection
@@ -233,11 +250,13 @@ Available in CloudWatch:
 ### Quick Diagnostics
 
 1. **Backend not responding**
+
    - Check ECS service running count
    - View CloudWatch logs
    - Verify target group health
 
 2. **CORS errors**
+
    - Update `ALLOWED_ORIGINS` in Secrets Manager
    - Restart ECS service
    - Clear browser cache
@@ -252,6 +271,7 @@ See `docs/deployment-troubleshooting.md` for comprehensive troubleshooting.
 ## Next Steps
 
 ### Post-Deployment
+
 1. ✅ Verify health endpoints
 2. ✅ Test lobby creation and gameplay
 3. ✅ Verify WebSocket real-time updates
@@ -260,6 +280,7 @@ See `docs/deployment-troubleshooting.md` for comprehensive troubleshooting.
 6. ✅ Configure auto-scaling policies (optional)
 
 ### Future Enhancements
+
 - [ ] Multi-environment setup (dev, staging, production)
 - [ ] Redis for Socket.IO adapter (multi-instance scaling)
 - [ ] Database for persistent lobby/game state
@@ -279,6 +300,7 @@ See `docs/deployment-troubleshooting.md` for comprehensive troubleshooting.
 ## Success Criteria
 
 Your deployment is successful when:
+
 - ✅ `https://api.yourdomain.com/health` returns `{"status": "healthy"}`
 - ✅ Frontend loads at `https://yourdomain.com`
 - ✅ Can create and join lobbies
@@ -291,22 +313,26 @@ Your deployment is successful when:
 ## Rollback Plan
 
 **Backend**:
+
 ```bash
 aws ecs update-service --cluster lockout-game-cluster --service lockout-game-service --task-definition lockout-game-task:<previous-revision>
 ```
 
 **Frontend**:
+
 - Amplify Console → Select previous deployment → Redeploy
 
 ## Maintenance
 
 ### Regular Tasks
+
 - Monitor CloudWatch logs and metrics
 - Update dependencies quarterly
 - Review and rotate secrets annually
 - Test backup/recovery procedures
 
 ### Updates
+
 - Backend: Push to main branch (auto-deploys via GitHub Actions)
 - Frontend: Push to main branch (auto-deploys via GitHub Actions)
 - Infrastructure: Update AWS resources via Console or CLI
@@ -316,4 +342,3 @@ aws ecs update-service --cluster lockout-game-cluster --service lockout-game-ser
 **Deployment completed successfully!** 🚀
 
 Your Lockout Game is now running on AWS with a production-grade, scalable architecture.
-

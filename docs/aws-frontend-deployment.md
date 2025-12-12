@@ -5,6 +5,7 @@ This guide covers deploying the Lockout Game React frontend to AWS Amplify with 
 ## Architecture Overview
 
 The frontend is deployed as a static site on AWS Amplify with:
+
 - **CloudFront CDN** for global content delivery
 - **Automatic SSL/TLS** certificates
 - **Git-based deployments** (auto-deploy on push)
@@ -93,9 +94,9 @@ Set environment variables for the frontend to connect to your backend:
 1. Go to **"App settings"** → **"Environment variables"**
 2. Add the following variables:
 
-| Variable | Value | Description |
-|----------|-------|-------------|
-| `VITE_API_URL` | `https://api.yourdomain.com` | Backend API URL |
+| Variable          | Value                        | Description           |
+| ----------------- | ---------------------------- | --------------------- |
+| `VITE_API_URL`    | `https://api.yourdomain.com` | Backend API URL       |
 | `VITE_SOCKET_URL` | `https://api.yourdomain.com` | Backend WebSocket URL |
 
 ### Via AWS CLI
@@ -164,6 +165,7 @@ aws amplify list-jobs --app-id $APP_ID --branch-name main
 ```
 
 **How Auto-Deploy Works:**
+
 1. Push code to `main` branch in GitHub
 2. GitHub webhook notifies Amplify
 3. Amplify automatically builds and deploys
@@ -172,6 +174,7 @@ aws amplify list-jobs --app-id $APP_ID --branch-name main
 ## Step 5: Configure Custom Domain (Optional)
 
 ### Prerequisites
+
 - Domain registered and Route53 hosted zone configured
 - SSL certificate will be automatically provisioned by Amplify
 
@@ -202,6 +205,7 @@ aws amplify create-domain-association \
 ```
 
 **DNS Verification:**
+
 - Amplify will automatically add CNAME records to Route53
 - Certificate validation takes 5-30 minutes
 - Domain will be available at `https://lockout.yourdomain.com`
@@ -224,6 +228,7 @@ Now that you know your Amplify URLs, update the backend CORS configuration:
 ```
 
 **Note:** The `https://*.amplifyapp.com` wildcard allows:
+
 - Your main Amplify URL: `https://main.d16sx389cvyqhv.amplifyapp.com`
 - All PR preview URLs: `https://pr-123.d16sx389cvyqhv.amplifyapp.com`
 
@@ -252,6 +257,7 @@ aws amplify get-branch \
 ```
 
 **How it works:**
+
 1. Push code to `main` branch
 2. Amplify detects the push via GitHub webhook
 3. Amplify automatically builds and deploys
@@ -263,7 +269,7 @@ aws amplify get-branch \
 
 ### Enable Pull Request Previews
 
-**⚠️ Important:** PR previews will use the same environment variables as your main branch by default, meaning they will connect to your **production backend**. 
+**⚠️ Important:** PR previews will use the same environment variables as your main branch by default, meaning they will connect to your **production backend**.
 
 ```bash
 aws amplify update-branch \
@@ -339,10 +345,12 @@ aws amplify get-app --app-id $APP_ID
 ### 2. Test Your Application
 
 Visit your Amplify URL:
+
 - Default: `https://main.d1234567890abc.amplifyapp.com`
 - Custom: `https://lockout.yourdomain.com`
 
 Test functionality:
+
 - ✅ Frontend loads
 - ✅ Can create lobby (API connection works)
 - ✅ WebSocket connections work (real-time updates)
@@ -351,6 +359,7 @@ Test functionality:
 ### 3. Monitor Logs
 
 In Amplify Console:
+
 - Go to your app
 - Click on the branch deployment
 - View build logs and deployment details
@@ -365,13 +374,14 @@ In Amplify Console:
 
 ```yaml
 artifacts:
-  baseDirectory: dist  # For Vite
+  baseDirectory: dist # For Vite
   # baseDirectory: build  # For Create React App
 ```
 
 **Problem**: Environment variables not working
 
-**Solution**: 
+**Solution**:
+
 1. Verify variables are set in Amplify Console
 2. Redeploy: `aws amplify start-job --app-id $APP_ID --branch-name main --job-type RELEASE`
 3. Check build logs for `VITE_API_URL` value
@@ -381,6 +391,7 @@ artifacts:
 **Problem**: Browser shows CORS errors
 
 **Solution**:
+
 1. Check backend logs: `aws logs tail /ecs/lockout-game --follow`
 2. Verify `ALLOWED_ORIGINS` in Secrets Manager includes Amplify URL
 3. Restart ECS service after updating secrets
@@ -390,6 +401,7 @@ artifacts:
 **Problem**: Socket.IO can't connect
 
 **Solution**:
+
 1. Verify `VITE_SOCKET_URL` environment variable
 2. Check ALB security group allows inbound 443
 3. Verify backend health: `curl https://api.yourdomain.com/health`
@@ -400,6 +412,7 @@ artifacts:
 **Problem**: Custom domain shows "Not found"
 
 **Solution**:
+
 1. Wait 5-30 minutes for DNS propagation
 2. Check certificate status in ACM
 3. Verify Route53 CNAME records were created
@@ -408,11 +421,13 @@ artifacts:
 ## Rollback Deployments
 
 ### Via Console
+
 1. Go to Amplify Console → Your App → Branch
 2. Click on a previous deployment
 3. Click **"Redeploy this version"**
 
 ### Via CLI
+
 ```bash
 # List previous jobs
 aws amplify list-jobs --app-id $APP_ID --branch-name main
@@ -426,7 +441,7 @@ aws amplify get-job --app-id $APP_ID --branch-name main --job-id <job-id>
 1. **Enable Gzip Compression** (enabled by default via CloudFront)
 2. **Set Cache-Control Headers**: Amplify does this automatically for static assets
 3. **Use Lazy Loading**: Already implemented in React components
-4. **Monitor Performance**: 
+4. **Monitor Performance**:
    - CloudFront metrics in CloudWatch
    - Real User Monitoring (RUM) via CloudWatch RUM (optional add-on)
 
@@ -445,4 +460,3 @@ aws amplify get-job --app-id $APP_ID --branch-name main --job-id <job-id>
 - Set up multiple environments (dev, staging, production)
 - Enable AWS WAF for additional security (optional)
 - Configure custom error pages
-

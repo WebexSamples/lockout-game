@@ -14,4 +14,3 @@ const config = {
 const environment = import.meta.env.MODE || 'development';
 
 export default config[environment];
-

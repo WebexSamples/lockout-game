@@ -5,6 +5,7 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 ## Pre-Deployment Preparation
 
 ### AWS Account Setup
+
 - [ ] AWS account created and configured
 - [ ] AWS CLI installed (`aws --version`)
 - [ ] AWS CLI configured (`aws configure`)
@@ -12,6 +13,7 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 - [ ] Domain registered or available in Route53 (if using custom domain)
 
 ### Local Development Tools
+
 - [ ] Docker installed and running (`docker --version`)
 - [ ] Git installed (`git --version`)
 - [ ] Node.js v20 installed (`node --version`)
@@ -19,6 +21,7 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 - [ ] Application tested locally and working
 
 ### Repository Setup
+
 - [ ] Code pushed to GitHub repository
 - [ ] GitHub account has admin access to repository
 
@@ -27,17 +30,20 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 ## Backend Deployment (ECS Fargate)
 
 ### Step 1: ECR Repository
+
 - [ ] ECR repository created: `lockout-game-backend`
 - [ ] Repository URI noted and saved
 - [ ] ECR login tested: `aws ecr get-login-password | docker login ...`
 
 ### Step 2: Networking
+
 - [ ] VPC selected or created
 - [ ] At least 2 public subnets in different AZs identified
 - [ ] Subnet IDs noted and saved
 - [ ] Internet Gateway attached to VPC
 
 ### Step 3: Security Groups
+
 - [ ] ALB security group created
   - [ ] Inbound rule: Port 80 from 0.0.0.0/0
   - [ ] Inbound rule: Port 443 from 0.0.0.0/0
@@ -46,12 +52,14 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 - [ ] Security group IDs noted and saved
 
 ### Step 4: SSL Certificate
+
 - [ ] ACM certificate requested for backend domain
 - [ ] DNS validation records added to Route53
 - [ ] Certificate status is "Issued"
 - [ ] Certificate ARN noted and saved
 
 ### Step 5: Application Load Balancer
+
 - [ ] ALB created (internet-facing)
 - [ ] ALB attached to public subnets
 - [ ] ALB security group attached
@@ -67,12 +75,14 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 - [ ] Target group ARN noted and saved
 
 ### Step 6: IAM Roles
+
 - [ ] ECS task execution role created
 - [ ] Managed policy attached: `AmazonECSTaskExecutionRolePolicy`
 - [ ] Custom policy for Secrets Manager access created and attached
 - [ ] Execution role ARN noted and saved
 
 ### Step 7: Secrets Manager
+
 - [ ] Secret created: `lockout-game/production`
 - [ ] SECRET_KEY generated (secure random 64-char hex)
 - [ ] Secret JSON configured:
@@ -83,10 +93,12 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 - [ ] Secret ARN noted and saved
 
 ### Step 8: ECS Cluster
+
 - [ ] ECS cluster created: `lockout-game-cluster`
 - [ ] Cluster ARN noted and saved
 
 ### Step 9: Task Definition
+
 - [ ] task-definition.json file created with:
   - [ ] Correct execution role ARN
   - [ ] Correct ECR image URI
@@ -100,12 +112,14 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 - [ ] Task definition ARN noted and saved
 
 ### Step 10: Docker Image
+
 - [ ] Docker image built locally and tested
 - [ ] Image tagged with ECR URI
 - [ ] Image pushed to ECR
 - [ ] Image visible in ECR Console
 
 ### Step 11: ECS Service
+
 - [ ] ECS service created:
   - [ ] Service name: `lockout-game-service`
   - [ ] Task definition: `lockout-game-task`
@@ -120,11 +134,13 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 - [ ] Tasks registered with target group
 
 ### Step 12: Route53
+
 - [ ] A record created for backend domain
 - [ ] A record points to ALB (ALIAS record)
 - [ ] DNS propagation verified (`dig api.yourdomain.com`)
 
 ### Step 13: Backend Verification
+
 - [ ] Health endpoint accessible: `curl https://api.yourdomain.com/health`
 - [ ] Returns `{"status": "healthy", "service": "lockout-game"}`
 - [ ] No SSL certificate warnings
@@ -135,22 +151,26 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 ## Frontend Deployment (Amplify)
 
 ### Step 1: Amplify App
+
 - [ ] Amplify app created
 - [ ] GitHub repository connected
 - [ ] Branch connected: `main`
 - [ ] App ID noted and saved
 
 ### Step 2: Build Configuration
+
 - [ ] Build settings configured from `frontend/amplify.yml`
 - [ ] Monorepo root directory set: `frontend`
 - [ ] Build specification verified in Console
 
 ### Step 3: Environment Variables
+
 - [ ] `VITE_API_URL` set to backend URL
 - [ ] `VITE_SOCKET_URL` set to backend URL
 - [ ] Environment variables visible in Amplify Console
 
 ### Step 4: Initial Deployment
+
 - [ ] Initial build triggered
 - [ ] Build completed successfully
 - [ ] Deployment succeeded
@@ -158,11 +178,13 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 - [ ] Default URL noted and saved (e.g., `https://main.d123.amplifyapp.com`)
 
 ### Step 5: Backend CORS Update
+
 - [ ] Amplify default URL added to backend `ALLOWED_ORIGINS`
 - [ ] Secrets Manager secret updated
 - [ ] ECS service restarted (`--force-new-deployment`)
 
 ### Step 6: Custom Domain (Optional)
+
 - [ ] Custom domain added in Amplify Console
 - [ ] Subdomain configured (e.g., `lockout`)
 - [ ] DNS records created in Route53
@@ -170,6 +192,7 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 - [ ] Custom domain accessible
 
 ### Step 7: Frontend Verification
+
 - [ ] Frontend loads at Amplify URL
 - [ ] Can create lobby (API connection works)
 - [ ] Can join lobby
@@ -182,6 +205,7 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 ## CI/CD Setup (GitHub Actions)
 
 ### Step 1: IAM User for GitHub Actions
+
 - [ ] IAM user created: `github-actions-lockout-game`
 - [ ] Policies attached:
   - [ ] ECR push permissions
@@ -191,6 +215,7 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 - [ ] Access key ID and secret noted (keep secure!)
 
 ### Step 2: GitHub Secrets
+
 - [ ] Repository Settings → Secrets → Actions opened
 - [ ] `AWS_ACCESS_KEY_ID` added
 - [ ] `AWS_SECRET_ACCESS_KEY` added
@@ -199,6 +224,7 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 - [ ] `AMPLIFY_BRANCH_NAME` added (e.g., `main`)
 
 ### Step 3: Workflow Files
+
 - [ ] `.github/workflows/deploy.yml` exists (backend)
 - [ ] `.github/workflows/deploy-frontend.yml` exists (frontend)
 - [ ] Workflow files have correct values:
@@ -209,6 +235,7 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
   - [ ] Container name
 
 ### Step 4: Test CI/CD
+
 - [ ] Make a small change to backend code
 - [ ] Push to main branch
 - [ ] Backend workflow triggers
@@ -228,17 +255,20 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 ## Post-Deployment Configuration
 
 ### Monitoring Setup
+
 - [ ] CloudWatch Log Groups configured with retention policy
 - [ ] CloudWatch alarm for ECS CPU > 80%
 - [ ] CloudWatch alarm for ALB unhealthy targets
 - [ ] CloudWatch alarm for ALB 5xx errors
 
 ### Documentation
+
 - [ ] All ARNs and IDs documented in secure location
 - [ ] Deployment runbook created for team
 - [ ] Access credentials stored securely
 
 ### Security Review
+
 - [ ] Security groups reviewed (least privilege)
 - [ ] IAM roles reviewed (least privilege)
 - [ ] Secrets rotation policy defined
@@ -250,6 +280,7 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 ## Final Verification
 
 ### End-to-End Testing
+
 - [ ] Open frontend in browser
 - [ ] Create a new lobby
 - [ ] Copy lobby ID
@@ -262,12 +293,14 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 - [ ] Verify game functionality
 
 ### Performance Testing
+
 - [ ] Page load time acceptable (< 3 seconds)
 - [ ] API response time acceptable (< 500ms)
 - [ ] WebSocket connection establishes quickly (< 2 seconds)
 - [ ] No console errors or warnings
 
 ### Cross-Browser Testing
+
 - [ ] Tested in Chrome
 - [ ] Tested in Firefox
 - [ ] Tested in Safari
@@ -275,6 +308,7 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 - [ ] Mobile browser tested (iOS/Android)
 
 ### Load Testing (Optional)
+
 - [ ] Multiple concurrent lobbies tested
 - [ ] Multiple users in single lobby tested
 - [ ] ECS service scales appropriately
@@ -285,6 +319,7 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 ## Rollback Plan
 
 ### If Backend Deployment Fails
+
 - [ ] Previous task definition revision identified
 - [ ] Rollback command ready:
   ```bash
@@ -295,6 +330,7 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
   ```
 
 ### If Frontend Deployment Fails
+
 - [ ] Previous Amplify deployment identified
 - [ ] Rollback steps documented:
   1. Go to Amplify Console
@@ -306,18 +342,22 @@ Use this checklist to ensure a successful deployment of the Lockout Game to AWS.
 ## Maintenance Schedule
 
 ### Daily
+
 - [ ] Check CloudWatch metrics for anomalies
 - [ ] Review error logs
 
 ### Weekly
+
 - [ ] Check for security updates
 - [ ] Review application logs for issues
 
 ### Monthly
+
 - [ ] Update dependencies (npm, pip)
 - [ ] Test disaster recovery procedures
 
 ### Quarterly
+
 - [ ] Rotate secrets in Secrets Manager
 - [ ] Review IAM permissions
 - [ ] Update SSL certificates if needed
@@ -347,6 +387,7 @@ Deployment is complete and successful when:
 ## Troubleshooting Reference
 
 If any step fails, refer to:
+
 - **Backend issues**: `docs/aws-backend-deployment.md`
 - **Frontend issues**: `docs/aws-frontend-deployment.md`
 - **Common problems**: `docs/deployment-troubleshooting.md`
@@ -356,11 +397,10 @@ If any step fails, refer to:
 
 ## Sign-Off
 
-Deployment completed by: ___________________
-Date: ___________________
-Backend URL: ___________________
-Frontend URL: ___________________
-Verified by: ___________________
+Deployment completed by: ********\_\_\_********
+Date: ********\_\_\_********
+Backend URL: ********\_\_\_********
+Frontend URL: ********\_\_\_********
+Verified by: ********\_\_\_********
 
 🎉 **Congratulations! Your Lockout Game is live on AWS!** 🎉
-

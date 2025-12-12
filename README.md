@@ -236,10 +236,12 @@ The Lockout Game is designed for deployment on AWS using a split architecture:
 ### Quick Start Deployment
 
 1. **Deploy Backend to ECS Fargate**
+
    - See [AWS Backend Deployment Guide](docs/aws-backend-deployment.md)
    - Estimated setup time: 30-60 minutes
 
 2. **Deploy Frontend to Amplify**
+
    - See [AWS Frontend Deployment Guide](docs/aws-frontend-deployment.md)
    - Estimated setup time: 15-30 minutes
 
@@ -270,12 +272,14 @@ See `.github/workflows/` for workflow configurations.
 ### Environment Variables
 
 **Backend** (AWS Secrets Manager):
+
 - `FLASK_ENV` - Application environment (production)
 - `SECRET_KEY` - Flask secret key (generate securely)
 - `FRONTEND_URL` - Frontend domain for CORS
 - `ALLOWED_ORIGINS` - Comma-separated list of allowed origins
 
 **Frontend** (AWS Amplify Environment Variables):
+
 - `VITE_API_URL` - Backend API URL
 - `VITE_SOCKET_URL` - Backend WebSocket URL
 
