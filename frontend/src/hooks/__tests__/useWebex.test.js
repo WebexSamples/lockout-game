@@ -44,6 +44,16 @@ describe('useWebex (real hook, mocked SDK)', () => {
     });
     globalThis.mockAppInstance.clearShareUrl.mockResolvedValue();
     globalThis.mockAppInstance.setShareUrl.mockResolvedValue();
+
+    // Mock window.location to be on /game route by default
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: {
+        pathname: '/game',
+        search: '',
+        origin: 'http://localhost',
+      },
+    });
   });
 
   it('sets Webex state and returns expected values after init', async () => {
@@ -68,16 +78,18 @@ describe('useWebex (real hook, mocked SDK)', () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.error).toMatch(/Webex init failed/);
+    expect(result.current.error).toBe('Webex init failed');
     expect(result.current.isConnected).toBe(false);
     expect(result.current.isRunningInWebex).toBe(false);
   });
 
   it('disables Webex SDK initialization when query parameter is set', async () => {
     // Mock the URL to include the disableWebex query parameter
-    const originalLocation = window.location;
-    delete window.location;
-    window.location = new URL('http://localhost?disableWebex=true');
+    window.location = {
+      pathname: '/game',
+      search: '?disableWebex=true',
+      origin: 'http://localhost',
+    };
 
     const { result } = renderHook(() => useWebex());
 
@@ -87,8 +99,22 @@ describe('useWebex (real hook, mocked SDK)', () => {
     expect(result.current.username).toBe('Unknown User (Webex Disabled)');
     expect(result.current.meetingName).toBe('No Active Meeting');
     expect(result.current.theme).toBe('dark'); // Updated to expect dark theme
+  });
 
-    // Restore the original location object
-    window.location = originalLocation;
+  it('skips Webex SDK initialization when not on /game route', async () => {
+    // Mock the URL to be on the landing page
+    window.location = {
+      pathname: '/',
+      search: '',
+      origin: 'http://localhost',
+    };
+
+    const { result } = renderHook(() => useWebex());
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.isRunningInWebex).toBe(false);
+    expect(result.current.isConnected).toBe(false);
+    expect(result.current.theme).toBe('dark');
   });
 });

@@ -26,10 +26,14 @@ import { Link as RouterLink } from 'react-router-dom';
 import { ROUTES } from '../constants';
 import AboutModal from './About/AboutModal';
 
-export default function Navbar({ darkMode, setDarkMode, shouldLoadWebex = false }) {
+export default function Navbar({
+  darkMode,
+  setDarkMode,
+  shouldLoadWebex = false,
+}) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
-  
+
   // Always call the hook, but it will internally skip initialization if disabled
   const {
     isConnected,
@@ -163,7 +167,9 @@ export default function Navbar({ darkMode, setDarkMode, shouldLoadWebex = false 
                       ) : (
                         <CrossIcon color="error" sx={{ mr: 1 }} />
                       )}
-                      {isConnected ? 'Connected to Webex' : 'Webex Not Connected'}
+                      {isConnected
+                        ? 'Connected to Webex'
+                        : 'Webex Not Connected'}
                     </MenuItem>,
 
                     !isRunningInWebex && (

@@ -24,9 +24,13 @@ describe('LandingPage', () => {
   });
 
   it('renders both launch buttons', () => {
-    const webexButton = screen.getByRole('button', { name: /launch in webex/i });
-    const standaloneButton = screen.getByRole('button', { name: /standalone browser/i });
-    
+    const webexButton = screen.getByRole('button', {
+      name: /launch in webex/i,
+    });
+    const standaloneButton = screen.getByRole('button', {
+      name: /standalone browser/i,
+    });
+
     expect(webexButton).toBeInTheDocument();
     expect(standaloneButton).toBeInTheDocument();
   });
@@ -42,6 +46,8 @@ describe('LandingPage', () => {
     const button = screen.getByRole('button', { name: /standalone browser/i });
     fireEvent.click(button);
 
-    expect(globalThis.mockNavigate).toHaveBeenCalledWith('/game?disableWebex=true');
+    expect(globalThis.mockNavigate).toHaveBeenCalledWith(
+      '/game?disableWebex=true',
+    );
   });
 });

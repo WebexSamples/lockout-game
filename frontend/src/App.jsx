@@ -17,7 +17,7 @@ import { ROUTES } from './constants';
 function App() {
   const [darkMode, setDarkMode] = useState(true); // Set dark mode as default
   const location = useLocation();
-  
+
   // Only load Webex on /game routes
   const shouldLoadWebex = location.pathname.startsWith('/game');
 
@@ -40,7 +40,11 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} shouldLoadWebex={shouldLoadWebex} />
+      <Navbar
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        shouldLoadWebex={shouldLoadWebex}
+      />
       <Container>
         <Routes>
           <Route path={ROUTES.HOME} element={<LandingPage />} />

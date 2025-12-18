@@ -22,13 +22,13 @@ const CreateLobby = () => {
   const [lobbyName, setLobbyName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   // Initialize webexEnabled based on URL parameter
   const [webexEnabled, setWebexEnabled] = useState(() => {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('disableWebex') !== 'true';
   });
-  
+
   const { isLoading, username, meetingName } = useWebex();
 
   // Once isLoading is false, set default values from Webex SDK
@@ -51,13 +51,13 @@ const CreateLobby = () => {
     try {
       const hostId = uuidv4();
       const data = await api.createLobby(hostId, displayName, lobbyName);
-      
+
       // Build the game URL with optional disableWebex parameter
       let gameUrl = ROUTES.GAME_WITH_ID(data.lobby_id);
       if (!webexEnabled) {
         gameUrl += '?disableWebex=true';
       }
-      
+
       navigate(gameUrl, {
         state: { user: { id: hostId, display_name: displayName } },
       });

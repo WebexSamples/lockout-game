@@ -1,5 +1,12 @@
 import React from 'react';
-import { Container, Typography, Button, Box, Paper, Stack } from '@mui/material';
+import {
+  Container,
+  Typography,
+  Button,
+  Box,
+  Paper,
+  Stack,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../constants';
 import lockoutImage from '../lockout.png';
@@ -49,19 +56,19 @@ const LandingPage = () => {
             spacing={2}
             justifyContent="center"
           >
-          <Button
-            variant="contained"
-            color="primary"
-            size="large"
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
               startIcon={<VideocamIcon />}
-            onClick={() => navigate(ROUTES.GAME)}
-            sx={{
-              boxShadow: '0 0 10px #00ff00',
-              '&:hover': {
-                boxShadow: '0 0 15px #00ff00',
-              },
-            }}
-          >
+              onClick={() => navigate(ROUTES.GAME)}
+              sx={{
+                boxShadow: '0 0 10px #00ff00',
+                '&:hover': {
+                  boxShadow: '0 0 15px #00ff00',
+                },
+              }}
+            >
               Launch in Webex
             </Button>
             <Button
@@ -79,7 +86,7 @@ const LandingPage = () => {
               }}
             >
               Standalone Browser
-          </Button>
+            </Button>
           </Stack>
         </Box>
       </Paper>

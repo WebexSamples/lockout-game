@@ -29,7 +29,7 @@ const useWebex = () => {
 
   // Only load Webex SDK on /game routes
   const shouldLoadWebex = window.location.pathname.startsWith('/game');
-  
+
   // Check for query parameter to disable Webex
   const isWebexDisabled =
     new URLSearchParams(window.location.search).get('disableWebex') === 'true';
