@@ -1,6 +1,6 @@
 // src/App.jsx
-import React, { useEffect, useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import {
   CssBaseline,
   ThemeProvider,
@@ -12,17 +12,14 @@ import Lobby from './components/Lobby';
 import Navbar from './components/Navbar';
 import LandingPage from './components/LandingPage';
 import About from './components/About';
-import useWebex from './hooks/useWebex';
 import { ROUTES } from './constants';
 
 function App() {
-  const { theme: webexTheme } = useWebex();
   const [darkMode, setDarkMode] = useState(true); // Set dark mode as default
+  const location = useLocation();
 
-  useEffect(() => {
-    // Only switch from dark if webex theme explicitly requests light
-    setDarkMode(webexTheme !== 'light');
-  }, [webexTheme]);
+  // Only load Webex on /game routes
+  const shouldLoadWebex = location.pathname.startsWith('/game');
 
   const theme = createTheme({
     palette: {
@@ -43,7 +40,11 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+      <Navbar
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        shouldLoadWebex={shouldLoadWebex}
+      />
       <Container>
         <Routes>
           <Route path={ROUTES.HOME} element={<LandingPage />} />

@@ -30,10 +30,15 @@ export const LobbyProvider = ({ lobbyId, initialUser, children }) => {
     [],
   );
 
-  const lobbyUrl = useMemo(
-    () => `${window.location.origin}${ROUTES.GAME_WITH_ID(lobbyId)}`,
-    [lobbyId],
-  );
+  const lobbyUrl = useMemo(() => {
+    const baseUrl = `${window.location.origin}${ROUTES.GAME_WITH_ID(lobbyId)}`;
+    // Preserve disableWebex query parameter if present
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('disableWebex') === 'true') {
+      return `${baseUrl}?disableWebex=true`;
+    }
+    return baseUrl;
+  }, [lobbyId]);
 
   // Fetch initial lobby data
   useEffect(() => {
