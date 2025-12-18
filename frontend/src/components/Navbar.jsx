@@ -26,9 +26,11 @@ import { Link as RouterLink } from 'react-router-dom';
 import { ROUTES } from '../constants';
 import AboutModal from './About/AboutModal';
 
-export default function Navbar({ darkMode, setDarkMode }) {
+export default function Navbar({ darkMode, setDarkMode, shouldLoadWebex = false }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
+  
+  // Always call the hook, but it will internally skip initialization if disabled
   const {
     isConnected,
     isRunningInWebex,
@@ -126,64 +128,68 @@ export default function Navbar({ darkMode, setDarkMode }) {
             </IconButton>
           </Tooltip>
 
-          {/* Webex Info Menu */}
-          <Tooltip title="Webex Info">
-            <IconButton
-              color="inherit"
-              onClick={handleMenuOpen}
-              aria-label="Webex Info Menu"
-              sx={{
-                '&:hover': {
-                  color: darkMode ? 'primary.main' : 'inherit',
-                },
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
-          </Tooltip>
+          {/* Webex Info Menu - Only show on /game routes */}
+          {shouldLoadWebex && (
+            <>
+              <Tooltip title="Webex Info">
+                <IconButton
+                  color="inherit"
+                  onClick={handleMenuOpen}
+                  aria-label="Webex Info Menu"
+                  sx={{
+                    '&:hover': {
+                      color: darkMode ? 'primary.main' : 'inherit',
+                    },
+                  }}
+                >
+                  <MenuIcon />
+                </IconButton>
+              </Tooltip>
 
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-          >
-            {loading ? (
-              <MenuItem>
-                <CircularProgress size={18} />
-              </MenuItem>
-            ) : (
-              [
-                <MenuItem key="status">
-                  {isConnected ? (
-                    <CheckIcon color="success" sx={{ mr: 1 }} />
-                  ) : (
-                    <CrossIcon color="error" sx={{ mr: 1 }} />
-                  )}
-                  {isConnected ? 'Connected to Webex' : 'Webex Not Connected'}
-                </MenuItem>,
-
-                !isRunningInWebex && (
-                  <MenuItem key="not-webex">
-                    <ErrorIcon color="warning" sx={{ mr: 1 }} />
-                    Running Outside Webex
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+              >
+                {loading ? (
+                  <MenuItem>
+                    <CircularProgress size={18} />
                   </MenuItem>
-                ),
+                ) : (
+                  [
+                    <MenuItem key="status">
+                      {isConnected ? (
+                        <CheckIcon color="success" sx={{ mr: 1 }} />
+                      ) : (
+                        <CrossIcon color="error" sx={{ mr: 1 }} />
+                      )}
+                      {isConnected ? 'Connected to Webex' : 'Webex Not Connected'}
+                    </MenuItem>,
 
-                username && <MenuItem key="username">{username}</MenuItem>,
+                    !isRunningInWebex && (
+                      <MenuItem key="not-webex">
+                        <ErrorIcon color="warning" sx={{ mr: 1 }} />
+                        Running Outside Webex
+                      </MenuItem>
+                    ),
 
-                meetingName && (
-                  <MenuItem key="meetingName">{meetingName}</MenuItem>
-                ),
+                    username && <MenuItem key="username">{username}</MenuItem>,
 
-                error && (
-                  <MenuItem key="error">
-                    <ErrorIcon color="error" sx={{ mr: 1 }} />
-                    {error}
-                  </MenuItem>
-                ),
-              ]
-            )}
-          </Menu>
+                    meetingName && (
+                      <MenuItem key="meetingName">{meetingName}</MenuItem>
+                    ),
+
+                    error && (
+                      <MenuItem key="error">
+                        <ErrorIcon color="error" sx={{ mr: 1 }} />
+                        {error}
+                      </MenuItem>
+                    ),
+                  ]
+                )}
+              </Menu>
+            </>
+          )}
         </Toolbar>
       </AppBar>
 
@@ -197,4 +203,5 @@ export default function Navbar({ darkMode, setDarkMode }) {
 Navbar.propTypes = {
   darkMode: PropTypes.bool.isRequired,
   setDarkMode: PropTypes.func.isRequired,
+  shouldLoadWebex: PropTypes.bool,
 };

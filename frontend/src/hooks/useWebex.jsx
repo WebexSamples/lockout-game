@@ -27,19 +27,24 @@ const useWebex = () => {
   const [meetingName, setMeetingName] = useState(null);
   const [theme, setTheme] = useState('dark'); // Default to dark theme for hacker aesthetic
 
+  // Only load Webex SDK on /game routes
+  const shouldLoadWebex = window.location.pathname.startsWith('/game');
+  
   // Check for query parameter to disable Webex
   const isWebexDisabled =
     new URLSearchParams(window.location.search).get('disableWebex') === 'true';
 
   useEffect(() => {
     const initializeWebex = async () => {
-      // If Webex is disabled via query parameter, skip initialization
-      if (isWebexDisabled) {
+      // Skip initialization if not on /game route or if disabled via query parameter
+      if (!shouldLoadWebex || isWebexDisabled) {
         setIsRunningInWebex(false);
         setLoading(false);
-        setUsername('Unknown User (Webex Disabled)');
-        setMeetingName('No Active Meeting');
-        setTheme('dark'); // Default to dark theme even when Webex is disabled
+        if (isWebexDisabled) {
+          setUsername('Unknown User (Webex Disabled)');
+          setMeetingName('No Active Meeting');
+        }
+        setTheme('dark'); // Default to dark theme
         return;
       }
 
@@ -98,7 +103,7 @@ const useWebex = () => {
     };
 
     initializeWebex();
-  }, [isWebexDisabled]);
+  }, [isWebexDisabled, shouldLoadWebex]);
 
   /**
    * Toggles the shared state of the lobby.

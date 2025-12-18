@@ -1,8 +1,10 @@
 import React from 'react';
-import { Container, Typography, Button, Box, Paper } from '@mui/material';
+import { Container, Typography, Button, Box, Paper, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../constants';
 import lockoutImage from '../lockout.png';
+import VideocamIcon from '@mui/icons-material/Videocam';
+import VideocamOffIcon from '@mui/icons-material/VideocamOff';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -42,10 +44,16 @@ const LandingPage = () => {
           trap?
         </Typography>
         <Box sx={{ mt: 4 }}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            justifyContent="center"
+          >
           <Button
             variant="contained"
             color="primary"
             size="large"
+              startIcon={<VideocamIcon />}
             onClick={() => navigate(ROUTES.GAME)}
             sx={{
               boxShadow: '0 0 10px #00ff00',
@@ -54,8 +62,25 @@ const LandingPage = () => {
               },
             }}
           >
-            Create a Game
+              Launch in Webex
+            </Button>
+            <Button
+              variant="outlined"
+              color="primary"
+              size="large"
+              startIcon={<VideocamOffIcon />}
+              onClick={() => navigate(`${ROUTES.GAME}?disableWebex=true`)}
+              sx={{
+                borderColor: 'primary.main',
+                '&:hover': {
+                  borderColor: 'primary.main',
+                  backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                },
+              }}
+            >
+              Standalone Browser
           </Button>
+          </Stack>
         </Box>
       </Paper>
     </Container>

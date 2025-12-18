@@ -23,15 +23,25 @@ describe('LandingPage', () => {
     expect(screen.getByText(/redshift/i)).toBeInTheDocument();
   });
 
-  it('renders Create a Game button', () => {
-    const button = screen.getByRole('button', { name: /create a game/i });
-    expect(button).toBeInTheDocument();
+  it('renders both launch buttons', () => {
+    const webexButton = screen.getByRole('button', { name: /launch in webex/i });
+    const standaloneButton = screen.getByRole('button', { name: /standalone browser/i });
+    
+    expect(webexButton).toBeInTheDocument();
+    expect(standaloneButton).toBeInTheDocument();
   });
 
-  it('calls navigate("/game") on button click', () => {
-    const button = screen.getByRole('button', { name: /create a game/i });
+  it('calls navigate("/game") when Launch in Webex is clicked', () => {
+    const button = screen.getByRole('button', { name: /launch in webex/i });
     fireEvent.click(button);
 
     expect(globalThis.mockNavigate).toHaveBeenCalledWith('/game');
+  });
+
+  it('calls navigate("/game?disableWebex=true") when Standalone Browser is clicked', () => {
+    const button = screen.getByRole('button', { name: /standalone browser/i });
+    fireEvent.click(button);
+
+    expect(globalThis.mockNavigate).toHaveBeenCalledWith('/game?disableWebex=true');
   });
 });

@@ -8,6 +8,8 @@ import {
   CircularProgress,
   Box,
   Paper,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
 import { v4 as uuidv4 } from 'uuid';
 import { ROUTES } from '../constants';
@@ -20,12 +22,19 @@ const CreateLobby = () => {
   const [lobbyName, setLobbyName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Initialize webexEnabled based on URL parameter
+  const [webexEnabled, setWebexEnabled] = useState(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('disableWebex') !== 'true';
+  });
+  
   const { isLoading, username, meetingName } = useWebex();
 
   // Once isLoading is false, set default values from Webex SDK
   // This is a workaround to avoid setting default values before Webex SDK is ready
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && webexEnabled) {
       if (meetingName) {
         setLobbyName(meetingName);
       }
@@ -33,7 +42,7 @@ const CreateLobby = () => {
         setDisplayName(username);
       }
     }
-  }, [isLoading, meetingName, username]);
+  }, [isLoading, meetingName, username, webexEnabled]);
 
   const handleCreateLobby = async () => {
     if (!lobbyName.trim() || !displayName.trim()) return;
@@ -42,7 +51,14 @@ const CreateLobby = () => {
     try {
       const hostId = uuidv4();
       const data = await api.createLobby(hostId, displayName, lobbyName);
-      navigate(ROUTES.GAME_WITH_ID(data.lobby_id), {
+      
+      // Build the game URL with optional disableWebex parameter
+      let gameUrl = ROUTES.GAME_WITH_ID(data.lobby_id);
+      if (!webexEnabled) {
+        gameUrl += '?disableWebex=true';
+      }
+      
+      navigate(gameUrl, {
         state: { user: { id: hostId, display_name: displayName } },
       });
     } catch (error) {
@@ -99,6 +115,27 @@ const CreateLobby = () => {
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
           />
+          <Box sx={{ mt: 2, textAlign: 'left' }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={webexEnabled}
+                  onChange={(e) => setWebexEnabled(e.target.checked)}
+                  sx={{
+                    color: 'primary.main',
+                    '&.Mui-checked': {
+                      color: 'primary.main',
+                    },
+                  }}
+                />
+              }
+              label={
+                <Typography variant="body2" color="textSecondary">
+                  Enable Webex Integration
+                </Typography>
+              }
+            />
+          </Box>
           <Button
             type="submit"
             variant="contained"
