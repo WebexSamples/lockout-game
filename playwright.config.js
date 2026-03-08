@@ -1,24 +1,26 @@
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Playwright configuration for Lockout Game E2E tests.
- * Tests require both the backend (port 5000) and frontend (port 5173) to be running.
  *
- * Start servers before running tests:
- *   Backend:  cd /path/to/lockout-game && python -m backend.app
- *   Frontend: cd /path/to/lockout-game/frontend && npm run dev
+ * Both the backend and frontend servers are started automatically via the
+ * `webServer` option — no manual server startup required.
  *
- * Then run: npx playwright test
+ * Run:  npm run test:e2e
  */
 export default defineConfig({
   testDir: './e2e',
 
-  // Run tests sequentially — full-game tests use multiple browser contexts
-  // that must coordinate, so parallel execution would cause interference.
+  // Run tests sequentially — full-game tests coordinate across multiple browser
+  // contexts and must not interfere with each other.
   fullyParallel: false,
   workers: 1,
 
-  // Retry once on CI to handle flakiness from timing-dependent socket events
+  // Retry once on CI to handle flakiness from timing-dependent socket events.
   retries: process.env.CI ? 1 : 0,
 
   reporter: [
@@ -27,7 +29,7 @@ export default defineConfig({
   ],
 
   use: {
-    baseURL: process.env.FRONTEND_URL || 'http://localhost:5173',
+    baseURL: 'http://localhost:5173',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -37,6 +39,38 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+    },
+  ],
+
+  // Automatically start (and stop) both servers before (and after) the suite.
+  webServer: [
+    {
+      // Flask + SocketIO backend
+      command: 'python -m backend.app',
+      url: 'http://localhost:5000/health',
+      reuseExistingServer: !process.env.CI,
+      timeout: 30_000,
+      env: {
+        FLASK_ENV: 'development',
+        SECRET_KEY: 'playwright-test-secret',
+        FRONTEND_URL: 'http://localhost:5173',
+        ALLOWED_ORIGINS: 'http://localhost:5173',
+      },
+    },
+    {
+      // React + Vite frontend
+      command: 'npm run dev',
+      cwd: path.join(__dirname, 'frontend'),
+      url: 'http://localhost:5173',
+      reuseExistingServer: !process.env.CI,
+      timeout: 30_000,
+      // Spread process.env first so PATH and other host vars are inherited,
+      // then override with Vite-specific values.
+      env: {
+        ...process.env,
+        VITE_API_URL: 'http://localhost:5000',
+        VITE_SOCKET_URL: 'http://localhost:5000',
+      },
     },
   ],
 });

@@ -55,10 +55,18 @@ const TURN_END_WAIT_MS = 8_000;
  * @param {(state: object) => boolean} condition
  * @param {number} [timeout=15000]
  */
-async function waitForGameState(request, lobbyId, userId, condition, timeout = 15_000) {
+async function waitForGameState(
+  request,
+  lobbyId,
+  userId,
+  condition,
+  timeout = 15_000,
+) {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
-    const resp = await request.get(`${BACKEND_URL}/game/${lobbyId}?user_id=${userId}`);
+    const resp = await request.get(
+      `${BACKEND_URL}/game/${lobbyId}?user_id=${userId}`,
+    );
     if (resp.ok()) {
       const state = await resp.json();
       if (condition(state)) return state;
@@ -71,7 +79,12 @@ async function waitForGameState(request, lobbyId, userId, condition, timeout = 1
 /**
  * Polls the backend lobby API until `condition(lobby)` returns true.
  */
-async function waitForLobbyState(request, lobbyId, condition, timeout = 10_000) {
+async function waitForLobbyState(
+  request,
+  lobbyId,
+  condition,
+  timeout = 10_000,
+) {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
     const resp = await request.get(`${BACKEND_URL}/lobby/${lobbyId}`);
@@ -135,7 +148,9 @@ test.describe('Full 4-Player Lockout Game', () => {
       console.log(`[setup] Lobby created: ${lobbyId}`);
 
       // Wait for Alice's lobby UI to render
-      await page1.waitForSelector('text=Test Lockout Game', { timeout: 10_000 });
+      await page1.waitForSelector('text=Test Lockout Game', {
+        timeout: 10_000,
+      });
 
       // ══════════════════════════════════════════════════════════════════════
       // PHASE 2 — BOB, CHARLIE, DIANA JOIN THE LOBBY
@@ -152,11 +167,14 @@ test.describe('Full 4-Player Lockout Game', () => {
         await page.getByLabel('Enter your display name').fill(displayName);
         await page.getByRole('button', { name: 'Join Lobby' }).click();
         // After joining, the lobby view (showing participants) should appear
-        await page.waitForSelector('text=Test Lockout Game', { timeout: 10_000 });
+        await page.waitForSelector('text=Test Lockout Game', {
+          timeout: 10_000,
+        });
       };
 
       await test.step('Bob joins the lobby', () => joinLobby(page2, 'Bob'));
-      await test.step('Charlie joins the lobby', () => joinLobby(page3, 'Charlie'));
+      await test.step('Charlie joins the lobby', () =>
+        joinLobby(page3, 'Charlie'));
       await test.step('Diana joins the lobby', () => joinLobby(page4, 'Diana'));
 
       // Allow socket updates to propagate so all pages reflect the current roster
@@ -244,16 +262,18 @@ test.describe('Full 4-Player Lockout Game', () => {
         // When all criteria are met the HostControls renders "Launch Operation".
         // If any criterion is missing it renders "Override Protocols" instead,
         // which opens a confirmation dialog before force-starting.
-        const launchBtn = page1.getByRole('button', { name: 'Launch Operation' });
-        const overrideBtn = page1.getByRole('button', { name: 'Override Protocols' });
+        const launchBtn = page1.getByRole('button', {
+          name: 'Launch Operation',
+        });
+        const overrideBtn = page1.getByRole('button', {
+          name: 'Override Protocols',
+        });
 
         if (await launchBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
           await launchBtn.click();
         } else {
           await overrideBtn.click();
-          await page1
-            .getByRole('button', { name: 'Execute Override' })
-            .click();
+          await page1.getByRole('button', { name: 'Execute Override' }).click();
         }
 
         // All four pages should transition to the in-game view
@@ -308,7 +328,9 @@ test.describe('Full 4-Player Lockout Game', () => {
         if (preKeywordState.game_over) {
           gameOver = true;
           winner = preKeywordState.winner;
-          console.log(`[game] Game ended before turn ${turn}. Winner: ${winner}`);
+          console.log(
+            `[game] Game ended before turn ${turn}. Winner: ${winner}`,
+          );
           break;
         }
 
@@ -321,9 +343,12 @@ test.describe('Full 4-Player Lockout Game', () => {
           const { hackerPage } = cfg;
 
           // Wait for the Hacker Terminal to become enabled (isTeamTurn = true)
-          await hackerPage.waitForSelector('input[placeholder*="single word"]', {
-            timeout: 10_000,
-          });
+          await hackerPage.waitForSelector(
+            'input[placeholder*="single word"]',
+            {
+              timeout: 10_000,
+            },
+          );
 
           const keywordInput = hackerPage.getByLabel('Keyword');
           await keywordInput.fill(`CLUE${turn}`);
@@ -357,7 +382,9 @@ test.describe('Full 4-Player Lockout Game', () => {
         if (!correctCard) {
           // All of this team's cards are already revealed — the game should
           // be over; handle it gracefully.
-          console.log(`[game] No unrevealed ${cfg.cardType} cards left. Ending loop.`);
+          console.log(
+            `[game] No unrevealed ${cfg.cardType} cards left. Ending loop.`,
+          );
           break;
         }
 
@@ -385,13 +412,17 @@ test.describe('Full 4-Player Lockout Game', () => {
           await memberPage.waitForSelector('button:has-text("Submit Guess")', {
             timeout: 5_000,
           });
-          await memberPage.getByRole('button', { name: /Submit Guess/ }).click();
+          await memberPage
+            .getByRole('button', { name: /Submit Guess/ })
+            .click();
         });
 
         // ── Wait for the turn to end ─────────────────────────────────────────
         // The backend sleeps 3 s after processing the guess and then calls
         // end_turn().  We wait a fixed amount plus a generous buffer.
-        console.log(`[game] Turn ${turn}: waiting for turn end (~${TURN_END_WAIT_MS / 1000}s)...`);
+        console.log(
+          `[game] Turn ${turn}: waiting for turn end (~${TURN_END_WAIT_MS / 1000}s)...`,
+        );
         await page1.waitForTimeout(TURN_END_WAIT_MS);
 
         // Poll for the next keyword_entry (or game_over)
@@ -416,8 +447,13 @@ test.describe('Full 4-Player Lockout Game', () => {
       // ══════════════════════════════════════════════════════════════════════
 
       // The game must have ended naturally within the turn budget.
-      expect(gameOver, 'Game should have ended before MAX_TURNS was reached').toBe(true);
-      expect(['team1', 'team2'], 'Winner must be a valid team').toContain(winner);
+      expect(
+        gameOver,
+        'Game should have ended before MAX_TURNS was reached',
+      ).toBe(true);
+      expect(['team1', 'team2'], 'Winner must be a valid team').toContain(
+        winner,
+      );
 
       console.log(`[result] Winner: ${winner}`);
 
@@ -432,7 +468,9 @@ test.describe('Full 4-Player Lockout Game', () => {
 
       // Verify the winner's remaining card count is 0 (all cards revealed).
       const winnerRemaining = finalState.team_data[winner]?.remaining_cards;
-      expect(winnerRemaining, "Winner's remaining card count should be 0").toBe(0);
+      expect(winnerRemaining, "Winner's remaining card count should be 0").toBe(
+        0,
+      );
 
       // All four pages should still show "Game In Progress" (game does not
       // auto-navigate away; the host must manually end it).
