@@ -31,6 +31,7 @@ import { test, expect } from '@playwright/test';
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
+const BACKEND_API_URL = `${BACKEND_URL}/api`;
 
 /** Maximum number of turns before the test fails (safety guard). */
 const MAX_TURNS = 25;
@@ -65,7 +66,7 @@ async function waitForGameState(
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
     const resp = await request.get(
-      `${BACKEND_URL}/game/${lobbyId}?user_id=${userId}`,
+      `${BACKEND_API_URL}/game/${lobbyId}?user_id=${userId}`,
     );
     if (resp.ok()) {
       const state = await resp.json();
@@ -87,7 +88,7 @@ async function waitForLobbyState(
 ) {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
-    const resp = await request.get(`${BACKEND_URL}/lobby/${lobbyId}`);
+    const resp = await request.get(`${BACKEND_API_URL}/lobby/${lobbyId}`);
     if (resp.ok()) {
       const lobby = await resp.json();
       if (condition(lobby)) return lobby;
@@ -262,17 +263,22 @@ test.describe('Full 4-Player Lockout Game', () => {
         // When all criteria are met the HostControls renders "Launch Operation".
         // If any criterion is missing it renders "Override Protocols" instead,
         // which opens a confirmation dialog before force-starting.
+        // Wait for whichever button Alice (host) sees — criteria-dependent.
+        // isVisible() is synchronous and cannot wait, so use waitForSelector first.
+        await page1.waitForSelector(
+          'button:has-text("Launch Operation"), button:has-text("Override Protocols")',
+          { timeout: 10_000 },
+        );
+
         const launchBtn = page1.getByRole('button', {
           name: 'Launch Operation',
         });
-        const overrideBtn = page1.getByRole('button', {
-          name: 'Override Protocols',
-        });
-
-        if (await launchBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
+        if (await launchBtn.isVisible()) {
           await launchBtn.click();
         } else {
-          await overrideBtn.click();
+          await page1
+            .getByRole('button', { name: 'Override Protocols' })
+            .click();
           await page1.getByRole('button', { name: 'Execute Override' }).click();
         }
 
@@ -342,12 +348,12 @@ test.describe('Full 4-Player Lockout Game', () => {
         await test.step(`Turn ${turn}: ${activeTeam} hacker submits keyword`, async () => {
           const { hackerPage } = cfg;
 
-          // Wait for the Hacker Terminal to become enabled (isTeamTurn = true)
+          // Wait for the Hacker Terminal input to become enabled.
+          // The input is always in the DOM but disabled when it's not the
+          // hacker's turn; :not([disabled]) ensures we only proceed when active.
           await hackerPage.waitForSelector(
-            'input[placeholder*="single word"]',
-            {
-              timeout: 10_000,
-            },
+            'input[placeholder*="single word"]:not([disabled])',
+            { timeout: 10_000 },
           );
 
           const keywordInput = hackerPage.getByLabel('Keyword');
@@ -459,7 +465,7 @@ test.describe('Full 4-Player Lockout Game', () => {
 
       // Confirm the final backend state matches what we observed.
       const finalResp = await request.get(
-        `${BACKEND_URL}/game/${lobbyId}?user_id=${alice.id}`,
+        `${BACKEND_API_URL}/game/${lobbyId}?user_id=${alice.id}`,
       );
       const finalState = await finalResp.json();
 
