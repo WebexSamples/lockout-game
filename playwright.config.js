@@ -45,13 +45,16 @@ export default defineConfig({
   // Automatically start (and stop) both servers before (and after) the suite.
   webServer: [
     {
-      // Flask + SocketIO backend
-      command: 'python -m backend.app',
+      // Flask + SocketIO backend — started via gunicorn with the eventlet worker
+      // class to match the production setup and avoid the Werkzeug stat-reloader
+      // conflicting with eventlet's event loop (which causes WebSocket connections
+      // to stall for minutes when using `python -m backend.app` with debug=True).
+      command:
+        'gunicorn --bind 0.0.0.0:5000 --workers 1 --worker-class eventlet --timeout 120 "backend.app:app"',
       url: 'http://localhost:5000/health',
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
       env: {
-        FLASK_ENV: 'development',
         SECRET_KEY: 'playwright-test-secret',
         FRONTEND_URL: 'http://localhost:5173',
         ALLOWED_ORIGINS: 'http://localhost:5173',

@@ -37,11 +37,11 @@ const BACKEND_API_URL = `${BACKEND_URL}/api`;
 const MAX_TURNS = 25;
 
 /**
- * How long (ms) to wait for the backend to auto-advance the turn.
- * The backend sleeps 3 s after a guess before ending the turn, so we need to
- * wait more than that plus some socket-propagation headroom.
+ * How long (ms) to poll for the turn-end state after a guess is submitted.
+ * The backend sleeps 3 s then calls end_turn(), so 15 s gives plenty of margin.
+ * There is no fixed sleep — we just poll until the phase changes.
  */
-const TURN_END_WAIT_MS = 8_000;
+const TURN_END_POLL_TIMEOUT_MS = 15_000;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -101,8 +101,9 @@ async function waitForLobbyState(
 // ─── Test ─────────────────────────────────────────────────────────────────────
 
 test.describe('Full 4-Player Lockout Game', () => {
-  // The full game can take several minutes in the worst case.
-  test.setTimeout(3 * 60 * 1_000);
+  // The full game takes ~11 turns × ~5 s each = ~55 s, plus setup.
+  // 5 minutes is a comfortable budget.
+  test.setTimeout(5 * 60 * 1_000);
 
   test('four players complete a game from lobby creation to a winner', async ({
     browser,
@@ -219,8 +220,10 @@ test.describe('Full 4-Player Lockout Game', () => {
       // ══════════════════════════════════════════════════════════════════════
 
       await test.step('Alice becomes Team 1 Hacker', async () => {
-        // "Become Hacker" only appears for the current user's own team
-        await page1.getByRole('button', { name: 'Become Hacker' }).click();
+        // "Become Hacker" button is wrapped in a MUI Tooltip whose title
+        // overrides the accessible name, so getByRole won't match it.
+        // Use a CSS text selector instead.
+        await page1.locator('button:has-text("Become Hacker")').click();
         // Wait for the button to change to "Become AI Agent", confirming success
         await page1.waitForSelector('button:has-text("Become AI Agent")', {
           timeout: 5_000,
@@ -228,7 +231,7 @@ test.describe('Full 4-Player Lockout Game', () => {
       });
 
       await test.step('Bob becomes Team 2 Hacker', async () => {
-        await page2.getByRole('button', { name: 'Become Hacker' }).click();
+        await page2.locator('button:has-text("Become Hacker")').click();
         await page2.waitForSelector('button:has-text("Become AI Agent")', {
           timeout: 5_000,
         });
@@ -425,19 +428,14 @@ test.describe('Full 4-Player Lockout Game', () => {
 
         // ── Wait for the turn to end ─────────────────────────────────────────
         // The backend sleeps 3 s after processing the guess and then calls
-        // end_turn().  We wait a fixed amount plus a generous buffer.
-        console.log(
-          `[game] Turn ${turn}: waiting for turn end (~${TURN_END_WAIT_MS / 1000}s)...`,
-        );
-        await page1.waitForTimeout(TURN_END_WAIT_MS);
-
-        // Poll for the next keyword_entry (or game_over)
+        // end_turn().  Poll until the phase changes — no fixed sleep needed.
+        console.log(`[game] Turn ${turn}: polling for turn end...`);
         const postTurnState = await waitForGameState(
           request,
           lobbyId,
           alice.id,
           (s) => s.game_phase === 'keyword_entry' || s.game_over,
-          10_000,
+          TURN_END_POLL_TIMEOUT_MS,
         );
 
         if (postTurnState.game_over) {
