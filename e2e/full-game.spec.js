@@ -65,8 +65,10 @@ async function waitForGameState(
 ) {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
+    // The game blueprint is registered with url_prefix='/api', overriding its
+    // own '/game' prefix, so the route resolves to /api/<lobby_id>.
     const resp = await request.get(
-      `${BACKEND_API_URL}/game/${lobbyId}?user_id=${userId}`,
+      `${BACKEND_API_URL}/${lobbyId}?user_id=${userId}`,
     );
     if (resp.ok()) {
       const state = await resp.json();
@@ -463,7 +465,7 @@ test.describe('Full 4-Player Lockout Game', () => {
 
       // Confirm the final backend state matches what we observed.
       const finalResp = await request.get(
-        `${BACKEND_API_URL}/game/${lobbyId}?user_id=${alice.id}`,
+        `${BACKEND_API_URL}/${lobbyId}?user_id=${alice.id}`,
       );
       const finalState = await finalResp.json();
 
