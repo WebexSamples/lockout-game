@@ -19,3 +19,7 @@ venv/
 
 # nginx config
 lobby.local.conf
+
+# Playwright
+playwright-report/
+test-results/
