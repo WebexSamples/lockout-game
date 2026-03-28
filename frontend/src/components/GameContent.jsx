@@ -43,9 +43,14 @@ const GameContent = ({ endGame, isUserHost, lobby, user, getCurrentTeam }) => {
   const hostName = hostParticipant?.display_name || 'Unknown';
 
   return (
-    <Box sx={{ mt: 4, mx: 'auto', maxWidth: 800 }}>
-      <Paper sx={{ p: 4, mb: 2 }}>
-        <Typography variant="h4" gutterBottom align="center">
+    <Box sx={{ mt: { xs: 2, sm: 4 }, mx: 'auto', maxWidth: 800 }}>
+      <Paper sx={{ p: { xs: 2, sm: 4 }, mb: 2 }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          align="center"
+          sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
+        >
           Game In Progress
         </Typography>
 

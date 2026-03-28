@@ -117,7 +117,7 @@ const GameTile = ({
         elevation={3}
         onClick={() => isSelectable && onCardSelect(card.id)}
         sx={{
-          height: 80,
+          height: { xs: 56, sm: 80 },
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -126,15 +126,27 @@ const GameTile = ({
           border: border,
           cursor: isSelectable ? 'pointer' : 'default',
           transition: 'all 0.2s ease',
+          // Larger touch target on mobile
+          touchAction: 'manipulation',
           '&:hover': isSelectable
             ? {
                 transform: 'translateY(-2px)',
                 boxShadow: 6,
               }
             : {},
+          '&:active': isSelectable
+            ? {
+                transform: 'scale(0.97)',
+              }
+            : {},
         }}
       >
-        <Typography variant="body1" align="center" fontWeight="medium">
+        <Typography
+          variant="body1"
+          align="center"
+          fontWeight="medium"
+          sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' }, px: 0.5 }}
+        >
           {card.word}
         </Typography>
       </Paper>
@@ -268,12 +280,14 @@ const GameBoard = forwardRef(
     };
 
     return (
-      <Paper sx={{ p: 3, mb: 3 }} elevation={3}>
+      <Paper sx={{ p: { xs: 1.5, sm: 3 }, mb: 3 }} elevation={3}>
         <Box
           sx={{
             display: 'flex',
+            flexWrap: 'wrap',
             justifyContent: 'space-between',
             alignItems: 'center',
+            gap: 1,
             mb: 2,
           }}
         >
@@ -281,7 +295,14 @@ const GameBoard = forwardRef(
 
           {/* Show active keyword if one exists */}
           {activeKeyword && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
               <Typography variant="body2">Active Keyword:</Typography>
               <Chip
                 label={activeKeyword.word}
@@ -299,7 +320,12 @@ const GameBoard = forwardRef(
         </Box>
 
         <Box sx={{ mb: 2 }}>
-          <Typography variant="body2" align="center" color="text.secondary">
+          <Typography
+            variant="body2"
+            align="center"
+            color="text.secondary"
+            sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+          >
             {isUserTeamLead
               ? 'As Hacker, you can see the type of each card. Submit keywords to help your team find them.'
               : isUserTurn
@@ -308,7 +334,7 @@ const GameBoard = forwardRef(
           </Typography>
         </Box>
 
-        <Grid container spacing={2}>
+        <Grid container spacing={{ xs: 1, sm: 2 }}>
           {boardData.map((card) => {
             // Get other players who have selected this card (excluding current user)
             const otherPlayersSelections = Object.entries(
@@ -321,7 +347,7 @@ const GameBoard = forwardRef(
               .map(([userId]) => userId);
 
             return (
-              <Grid item xs={3} key={card.id}>
+              <Grid item xs={6} sm={3} key={card.id}>
                 <GameTile
                   card={card}
                   isTeamLead={isUserTeamLead}
@@ -339,7 +365,13 @@ const GameBoard = forwardRef(
         {/* Legend for hackers */}
         {isUserTeamLead && (
           <Box
-            sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 2 }}
+            sx={{
+              mt: 2,
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: { xs: 1.5, sm: 2 },
+            }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Box
@@ -392,7 +424,7 @@ const GameBoard = forwardRef(
           </Box>
         )}
 
-        {/* Submit button for team members */}
+        {/* Submit button for team members — full-width on mobile */}
         {isTeamMember &&
           isUserTurn &&
           activeKeyword &&
@@ -402,8 +434,9 @@ const GameBoard = forwardRef(
                 variant="contained"
                 color={userTeam === TEAMS.TEAM1 ? 'primary' : 'error'}
                 onClick={submitGuesses}
-                // Allow submitting any number up to the count
                 disabled={selectedCards.length > activeKeyword.count}
+                size="large"
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
               >
                 Submit Guess ({selectedCards.length}/{activeKeyword.count})
               </Button>

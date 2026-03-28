@@ -97,7 +97,11 @@ const HackerPrompt = ({ activeTeam, isTeamLead, isTeamTurn }) => {
       </Typography>
 
       <form onSubmit={handleSubmit}>
-        <Stack direction="row" spacing={2} alignItems="flex-start">
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          alignItems={{ xs: 'stretch', sm: 'flex-start' }}
+        >
           <TextField
             label="Keyword"
             value={word}
@@ -108,10 +112,11 @@ const HackerPrompt = ({ activeTeam, isTeamLead, isTeamTurn }) => {
             size="small"
             placeholder="Enter a single word..."
             helperText="Input a strategic word to help your team find your cards"
+            inputProps={{ autoCapitalize: 'none', autoCorrect: 'off' }}
           />
 
           <FormControl
-            sx={{ minWidth: 120 }}
+            sx={{ minWidth: { xs: '100%', sm: 120 } }}
             size="small"
             disabled={isDisabled}
           >
@@ -135,6 +140,8 @@ const HackerPrompt = ({ activeTeam, isTeamLead, isTeamTurn }) => {
             color={activeTeam === TEAMS.TEAM1 ? 'primary' : 'error'}
             endIcon={<SendIcon />}
             disabled={isDisabled || !word.trim()}
+            size="large"
+            sx={{ flexShrink: 0 }}
           >
             Send
           </Button>

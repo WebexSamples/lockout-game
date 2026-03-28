@@ -42,7 +42,7 @@ const GameStatusIndicator = ({ lobby }) => {
       </Typography>
 
       <Grid container spacing={2}>
-        <Grid item xs={5}>
+        <Grid item xs={12} sm={5}>
           <Box
             sx={{
               p: 2,
@@ -60,9 +60,17 @@ const GameStatusIndicator = ({ lobby }) => {
           >
             <Typography variant="subtitle1" fontWeight="bold">
               {TEAM_LABELS[TEAMS.TEAM1]}
+              {gameState.activeTeam === TEAMS.TEAM1 && (
+                <Chip
+                  label="Active"
+                  color="primary"
+                  size="small"
+                  sx={{ ml: 1, display: { xs: 'inline-flex', sm: 'none' } }}
+                />
+              )}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-              <Typography>Remaining Cards:</Typography>
+              <Typography variant="body2">Remaining Cards:</Typography>
               <Chip label={team1RemainingCards} color="primary" size="small" />
             </Box>
             <Divider sx={{ width: '100%', my: 1 }} />
@@ -76,9 +84,10 @@ const GameStatusIndicator = ({ lobby }) => {
 
         <Grid
           item
-          xs={2}
+          xs={12}
+          sm={2}
           sx={{
-            display: 'flex',
+            display: { xs: 'none', sm: 'flex' },
             alignItems: 'center',
             justifyContent: 'center',
           }}
@@ -91,7 +100,7 @@ const GameStatusIndicator = ({ lobby }) => {
           </Box>
         </Grid>
 
-        <Grid item xs={5}>
+        <Grid item xs={12} sm={5}>
           <Box
             sx={{
               p: 2,
@@ -109,9 +118,17 @@ const GameStatusIndicator = ({ lobby }) => {
           >
             <Typography variant="subtitle1" fontWeight="bold">
               {TEAM_LABELS[TEAMS.TEAM2]}
+              {gameState.activeTeam === TEAMS.TEAM2 && (
+                <Chip
+                  label="Active"
+                  color="error"
+                  size="small"
+                  sx={{ ml: 1, display: { xs: 'inline-flex', sm: 'none' } }}
+                />
+              )}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-              <Typography>Remaining Cards:</Typography>
+              <Typography variant="body2">Remaining Cards:</Typography>
               <Chip label={team2RemainingCards} color="error" size="small" />
             </Box>
             <Divider sx={{ width: '100%', my: 1 }} />
